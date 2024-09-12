@@ -24,7 +24,7 @@ const FormInput = () => {
 
     // Send message to the OpenAI
     const url = pathname === '/' ? '/api/onyourdata' : pathname === '/rag-extra-1' ? '/api/rag-extra-1' : pathname === '/rag-extra-2' ? '/api/rag-extra-2' : '/api/onyourdata';
-    const response = await fetch(`${process.env.NEXT_PUBLIC_URL}${url}`, {
+    const response = await fetch(`${url}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

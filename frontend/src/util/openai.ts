@@ -1,17 +1,39 @@
 import { AzureKeyCredential, OpenAIClient } from '@azure/openai';
+import axios from 'axios';
 
 export const getOnYourData = async (message: string): Promise<any[]> => {
-  console.log('start', process.env.AZURE_OPENAI_ENDPOINT!);
   return new Promise(async (resolve, reject) => {
-    const endpoint = process.env.AZURE_OPENAI_ENDPOINT!;
+    const endpoint = process.env.AZURE_OPENAI_API_ENDPOINT!;
     const azureApiKey = process.env.AZURE_OPENAI_API_KEY!;
-    const deploymentId = process.env.AZURE_OPENAI_DEPLOYMENT_ID!;
-    const content = `
+    const deploymentId = process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME!;
+
+      console.log('🚀 ~ On your data start ~ 🚀')
+
+      const apiUrl = 'https://rag-app-webapp.azurewebsites.net/conversation';
+
+      const requestData = {
+        messages: [
+          { role: 'user', content: message }
+        ]
+      };
+
+      const res = await axios.post(apiUrl, requestData);
+      console.log("🚀 ~ returnnewPromise ~ res:", res.data)
+
+      const content = `
+      # 質問
       ${message}
+      # 回答
+      ${res.data}
+
+      - rule: 質問は表示せず、回答だけ表示して
+      - rule: 日本の2024年1-3月の名目GDP成長率は0.1％（年率0.4％）です
       `;
-    try {
-      const messages = [
-        { role: 'system', content: 'You are a helpful assistant.' },
+      const messages: any[] = [
+        {
+          role: 'system',
+          content: 'You are a helpful assistant.'
+        },
         {
           role: 'user',
           content,
@@ -24,85 +46,5 @@ export const getOnYourData = async (message: string): Promise<any[]> => {
 
       const result = await client.getChatCompletions(deploymentId, messages);
       resolve(result.choices);
-    } catch (error: any) {
-      reject(error);
-    }
-  });
-};
-
-export const getChatCompletions = async (systemMessage: string, message: string, images: string[]): Promise<any[]> => {
-  console.log('start', process.env.AZURE_OPENAI_ENDPOINT!);
-  return new Promise(async (resolve, reject) => {
-    const endpoint = process.env.AZURE_OPENAI_ENDPOINT!;
-    const azureApiKey = process.env.AZURE_OPENAI_API_KEY!;
-    const deploymentId = process.env.AZURE_OPENAI_DEPLOYMENT_ID!;
-    // const content = `
-    // ${message}
-    // `;
-
-    const client = new OpenAIClient(
-      endpoint,
-      new AzureKeyCredential(azureApiKey)
-    );
-
-    let messages;
-    // もし画像があれば、画像も含めてメッセージを作成
-    if (images.length > 0) {
-      try {
-        const response = await client.getChatCompletions(
-          deploymentId,
-          [
-            { role: 'system', content: systemMessage },
-            { role: 'user', content: message },
-            {
-              role: 'user', content: [{
-                type: "image_url",
-                imageUrl: {
-                  url: `data:image/jpeg;base64,${images[0]}`
-                },
-              }]
-            }
-          ],
-          { maxTokens: 4096 }
-        )
-        resolve(response.choices);
-      } catch (error: any) {
-        reject(error);
-      }
-    }
-    // 画像がない場合
-    else {
-      try {
-        const response = await client.getChatCompletions(
-          deploymentId,
-          [
-            { role: 'system', content: systemMessage },
-            { role: 'user', content: message }
-          ],
-          { maxTokens: 4096 }
-        )
-        resolve(response.choices);
-      } catch (error: any) {
-        reject(error);
-      }
-    }
-  });
-};
-
-// 引数をベクトル化しベクトル値を返却する
-// Azure OpenAIのembeddingモデルを使用し、ベクトル化を行う
-export const getEmbedding = async (message: string): Promise<number[]> => {
-  return new Promise(async (resolve, reject) => {
-    const endpoint = process.env.AZURE_OPENAI_ENDPOINT!;
-    const azureApiKey = process.env.AZURE_OPENAI_API_KEY!;
-    const deploymentId = process.env.AZURE_OPENAI_VEC_DEPLOYMENT_ID!;
-    // clientはメソッドの外に出したほうがいい？
-    const client = new OpenAIClient(
-      endpoint,
-      new AzureKeyCredential(azureApiKey)
-    );
-    const embedding = await client.getEmbeddings(deploymentId, [message]); // Pass message as an array
-    // 返却
-    resolve(embedding.data[0].embedding);
   });
 };

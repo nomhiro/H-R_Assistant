@@ -1,49 +1,23 @@
-"use client"
+'use client';
 
-import { usePathname } from 'next/navigation';
+import MessageItem from '@/components/MessageItem/MessageItem';
+import { usePostMessageMutation } from '@/features/rag-extra-2/projectSlice';
+import { useParams } from 'next/navigation';
 import { useState } from 'react';
-import { inputMessageToReduxStore } from '../../features/messageSlice';
-import { useAppDispatch } from '../../hooks/useRTK';
 
-const FormInput = () => {
-  const dispatch = useAppDispatch();
-  const [message, setMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const pathname = usePathname();
-  
+interface Props {
+  onSubmit: (message: string) => Promise<void>;
+}
+
+const FormInput = (props: Props) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>('');
+
   const sendMessage = async () => {
     setIsLoading(true);
-    // Send human message to the redux store
-    dispatch(
-      inputMessageToReduxStore({
-        pathname,
-        message,
-        isMan: true,
-      })
-    );
-
-    // Send message to the OpenAI
-    const url = pathname === '/' ? '/api/onyourdata' : pathname === '/rag-extra-1' ? '/api/rag-extra-1' : pathname === '/rag-extra-2' ? '/api/rag-extra-2' : '/api/onyourdata';
-    const response = await fetch(`${process.env.NEXT_PUBLIC_URL}${url}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message }),
-    });
-
-    const { aiMessage } = await response.json();  
-    // Send OpenAI message to the redux store
-    dispatch(
-      inputMessageToReduxStore({
-        pathname,
-        message: aiMessage,
-        isMan: false,
-      })
-    );
-    setMessage('');
+    await props.onSubmit(message);
     setIsLoading(false);
-  }
+  };
 
   return (
     <div className="w-full justify-center items-center">
@@ -86,4 +60,41 @@ const FormInput = () => {
   );
 };
 
-export default FormInput;
+export default function ChatPage() {
+  const { projectId } = useParams();
+
+  const [postMessage] = usePostMessageMutation();
+  const [messages, setMessages] = useState<
+    { message: string; isMan: boolean }[]
+  >([]);
+
+  const onSubmit = async (message: string) => {
+    const response = await postMessage({
+      projectId: projectId as string,
+      body: { message },
+    });
+
+    if (response.data) {
+      setMessages((prev) => [
+        ...prev,
+        { message, isMan: true },
+        { message: response.data?.message, isMan: false },
+      ]);
+    }
+  };
+
+  return (
+    <main className="flex flex-col text-gray-800 w-full h-full overflow-y-auto">
+      <div className="flex bg-slate-300 h-5/6 p-4 justify-center">
+        <div className="flex flex-col w-[80%]">
+          {messages.map((m, i) => (
+            <MessageItem isMan={m.isMan} message={m.message} key={i} />
+          ))}
+        </div>
+      </div>
+      <div className="flex h-1/6 p-4 justify-center items-center">
+        <FormInput onSubmit={onSubmit} />
+      </div>
+    </main>
+  );
+}

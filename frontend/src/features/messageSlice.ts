@@ -3,11 +3,15 @@ import { RootState } from '../store/store';
 import { MessageType } from '../types/types';
 
 type InitialStateType = {
-  houseAssistant: MessageType[];
+  onyourdata: MessageType[];
+  ragextra1: MessageType[];
+  ragextra2: MessageType[];
 };
 
 const initialState: InitialStateType = {
-  houseAssistant: [],
+  onyourdata: [],
+  ragextra1: [],
+  ragextra2: [],
 };
 
 export const messageSlice = createSlice({
@@ -16,7 +20,11 @@ export const messageSlice = createSlice({
   reducers: {
     inputMessageToReduxStore: (state, action) => {
       if (action.payload.pathname === '/') {
-        state.houseAssistant.push(action.payload);
+        state.onyourdata.push(action.payload);
+      } else if (action.payload.pathname === '/rag-extra-1') { 
+        state.ragextra1.push(action.payload);
+      } else if (action.payload.pathname === '/rag-extra-2') { 
+        state.ragextra2.push(action.payload);
       }
     },
   },

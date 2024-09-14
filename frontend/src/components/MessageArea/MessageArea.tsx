@@ -8,7 +8,7 @@ import MessageItem from "../MessageItem/MessageItem";
 const MessageArea = () => {
   const pathname = usePathname();
   const messages = useAppSelector(selectMessage);
-  const data = pathname === "/" ? messages.houseAssistant : messages.houseAssistant;
+  const data = pathname === "/" ? messages.onyourdata : pathname === "/rag-extra-1" ? messages.ragextra1 : pathname === "/rag-extra-2" ? messages.ragextra2 : messages.onyourdata;
   const scrollBottomRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     scrollBottomRef?.current?.scrollIntoView({

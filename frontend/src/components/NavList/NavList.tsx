@@ -14,9 +14,21 @@ const NavList = () => {
   const navList: NavItemType[] = [
     {
       id: 1,
-      label: 'H&R Assistant',
+      label: 'On Your Data',
       link: '/',
       icon: <BsRocketTakeoff className="size-5" />,
+    },
+    {
+      id: 2,
+      label: 'RAG extra 1',
+      link: '/rag-extra-1',
+      icon: <FaRocket className="size-5" />,
+    },
+    {
+      id: 3,
+      label: 'RAG extra 2',
+      link: '/rag-extra-2',
+      icon: <FaRocket className="size-5" />,
     },
   ];
   return (

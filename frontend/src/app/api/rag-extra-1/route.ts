@@ -1,11 +1,11 @@
 /**
- * house_assistant用のAPIルート
+ * RAG extra用のAPIルート
  */
 import { NextRequest } from 'next/dist/server/web/spec-extension/request';
 import { NextResponse } from 'next/dist/server/web/spec-extension/response';
-import { getChatCompletions, getEmbedding } from '../../../util/openai';
-import { getItemsByVector } from '../../../util/cosmos'
-import { getBase64File } from '../../../util/blob'
+import { getChatCompletions, getEmbedding } from '../../../util/extra-1/openai-exrtra-shrkm';
+import { getItemsByVector } from '../../../util/extra-1/cosmos'
+import { getBase64File } from '../../../util/extra-1/blob'
 
 export const POST = async (
   req: NextRequest,
@@ -13,7 +13,7 @@ export const POST = async (
   try {
     const {message} = await req.json();
     
-    console.log('🚀House Assistant用のAPIルート');
+    console.log('🚀RAG-extra用のAPIルート');
 
     // messageを検索するための文章に変換
     // 未実装
@@ -43,7 +43,6 @@ export const POST = async (
         images.push(image);
       }
     }
-    console.log('🚀systemMessage:', systemMessage);
 
     // OpenAI へのリクエスト
     const result = await getChatCompletions(systemMessage, message, images);
@@ -55,8 +54,7 @@ export const POST = async (
 
     return NextResponse.json({ aiMessage }, { status: 200 });
   } catch (error: any) {
-    console.error('🚀Error:', error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ aiMessage: error.message }, { status: 500 });
   }
 };
 

@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'H&Rアシスタント',
-  description: '生活をサポートするアシスタントです。',
+  description: 'おうちなどの質問にお答えします。',
 };
 
 export default function RootLayout({

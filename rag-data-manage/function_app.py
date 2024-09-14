@@ -1,37 +1,30 @@
 import azure.functions as func
-import pymupdf
 from openai import AzureOpenAI
-from langchain_text_splitters import CharacterTextSplitter
 
 import os
 from io import BytesIO
 import logging
-import tempfile
-import base64
 import json
-from urllib.parse import urlparse
-from PIL import Image
 
 from azure.storage.blob import BlobServiceClient
-
 from service.openai_service.openai_service import AzureOpenAIService
 from service.cosmos_service.cosmos_service import CosmosService
-from domain.obj_cosmos_page import CosmosPageObj
-from domain.document_structure import DocumentStructure
+from service.regist_pdf import regist_pdf
+from service.regist_png import regist_png
 
 logging.basicConfig(level=logging.INFO)
 app = func.FunctionApp()
 
 STR_AI_SYSTEMMESSAGE = """
 ##制約条件
-- 画像内の情報を読み取り、文章にしてください。
-- 図や表が含まれる場合、図や表の内容を理解できるように説明する文章にしなさい。
+- 画像内の情報を読み取りなさい。
+- 表が含まれる場合、Markdown形式で表を記載しなさい。
+- 図が含まれる場合、図の内容を理解できるように説明する文章にしなさい。
 - 回答形式 以外の内容は記載しないでください。
-- 同じ言葉を絶対に繰り返さないこと。
 
 ##回答形式##
 {
-    "content":"画像をテキストに変換した文字列",
+    "content":"画像の内容を説明した文章",
     "keywords": "カンマ区切りのキーワード群",
     "is_contain_image": "図や表などの画像で保存しておくべき情報が含まれている場合はtrue、それ以外はfalse"
 }
@@ -114,85 +107,32 @@ def EventGridTrigger(azeventgrid: func.EventGridEvent):
                 
                 logging.info("🚀Triggerd blob file is PDF.")
         
-                # Create a temporary file
-                temp_path = ""
-                with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp:
-                    temp.write(data_as_file.read())
-                    temp_path = temp.name
-
-                doc = pymupdf.open(temp_path)
-                # ページ数をログに出力
-                logging.info(f"🚀PDF Page count : {doc.page_count}")
-
-                # ページごとにCosmosDBのアイテムを作成し、ページ画像がある場合はページの画像ファイルをBlobにを作成
-                for page in doc:  # iterate through the pages
-                    logging.info(f"🚀Page Number: {page.number}")
-                    pix = page.get_pixmap()  # render page to an image
-                    # Convert the pixmap to a PIL Image
-                    img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                regist_pdf(
+                    azure_openai_service=azure_openai_service,
+                    cosmos_service=cosmos_service,
+                    blob_service_client=blob_service_client,
+                    data_as_file=data_as_file,
+                    STR_AI_SYSTEMMESSAGE=STR_AI_SYSTEMMESSAGE,
+                    BLOB_CONTAINER_NAME_IMAGE=BLOB_CONTAINER_NAME_IMAGE,
+                    MAX_CONTENT_LENGTH=MAX_CONTENT_LENGTH,
+                    file_name=file_name,
+                    blob_url=blob_url
+                )
+            
+            elif file_extension == ".png" or file_extension == ".jpg" or file_extension == ".jpeg":
                 
-                    binary_data = BytesIO()
-                    img.save(binary_data, format='PNG')
-                    binary_data.seek(0)
-                    base64_data = base64.b64encode(binary_data.getvalue()).decode()
-                    
-                    # OpenAIに推論させるためのメッセージを作成
-                    image_content = []
-                    image_content.append({
-                        "type": "image_url",
-                        "image_url": 
-                        {
-                            "url": f"data:image/jpeg;base64,{base64_data}"
-                        },
-                    })
-                    messages = []
-                    messages.append({"role": "system", "content": STR_AI_SYSTEMMESSAGE})
-                    messages.append({"role": "user", "content": image_content})
-                    
-                    # GPT4oにはjsonフォーマット指定がないので使えない。
-                    response = azure_openai_service.getChatCompletionJsonStructuredMode(messages, 0, 0, DocumentStructure)
-                    
-                    # Check and truncate the response content if necessary
-                    doc_structured = response.choices[0].message.parsed
-                    if len(doc_structured.content) > MAX_CONTENT_LENGTH:
-                        logging.warning(f"Response content length ({len(doc_structured.content)}) exceeds the limit. Truncating to {MAX_CONTENT_LENGTH} characters.")
-                        doc_structured.content = doc_structured.content[:MAX_CONTENT_LENGTH]
-
-                    logging.info(f"🚀Response Format: {doc_structured}")
-                    
-                    # contentをベクトル値に変換
-                    # docu_structured.contentは8192トークン以内にする
-                    text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
-                        model_name="gpt-4", chunk_size=7000, chunk_overlap=0
-                    )
-                    spilitted_doc_structured = text_splitter.split_text(doc_structured.content)
-                    content_vector = azure_openai_service.getEmbedding(spilitted_doc_structured)
-                    
-                    # is_contain_imageがTrueの場合は、StorageAccountのBlobの"rag-images"に画像をアップロード
-                    if doc_structured.is_contain_image:
-                        # 格納するパスを生成。TriggerされたBlobのパスのフォルダとファイル名を、格納先フォルダにする。
-                        parsed_url = urlparse(blob_url)
-                        path_parts = parsed_url.path.split('/')
-                        index = path_parts.index('rag-docs')
-                        
-                        stored_image_path = file_name + "_page" + str(page.number) + ".png"
-                        
-                        blob_client = blob_service_client.get_blob_client(container=BLOB_CONTAINER_NAME_IMAGE, blob=stored_image_path)
-                        blob_client.upload_blob(base64.b64decode(base64_data), overwrite=True)
-                        logging.info(f"🚀Uploaded Image to Blob: {stored_image_path}")
-                    
-                    # CosmosDBに登録するアイテムのオブジェクト
-                    cosmos_page_obj = CosmosPageObj(file_name=file_name,
-                                                    file_path=blob_url,
-                                                    page_number=page.number,
-                                                    content=doc_structured.content, 
-                                                    content_vector=content_vector,
-                                                    keywords=doc_structured.keywords,
-                                                    delete_flag=False,
-                                                    is_contain_image=doc_structured.is_contain_image,
-                                                    image_blob_path=stored_image_path if doc_structured.is_contain_image else None)
-                    
-                    cosmos_service.insert_data(cosmos_page_obj.to_dict())
+                logging.info("🚀Triggerd blob file is Image.")
+                regist_png(
+                    azure_openai_service=azure_openai_service,
+                    cosmos_service=cosmos_service,
+                    blob_service_client=blob_service_client,
+                    data_as_file=data_as_file,
+                    STR_AI_SYSTEMMESSAGE=STR_AI_SYSTEMMESSAGE,
+                    BLOB_CONTAINER_NAME_IMAGE=BLOB_CONTAINER_NAME_IMAGE,
+                    MAX_CONTENT_LENGTH=MAX_CONTENT_LENGTH,
+                    file_name=file_name,
+                    blob_url=blob_url
+                )
                     
             else:
                 # 対応していない拡張子なので、ログにWarningで出力

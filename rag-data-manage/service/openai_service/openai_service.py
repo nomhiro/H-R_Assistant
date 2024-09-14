@@ -38,10 +38,8 @@ class AzureOpenAIService:
             return response
         
         except Exception as e:
-            logging.error(f'🚀❌Error at getChatCompletion: {e}')        
-            # エラーが「Could not parse response content as the length limit was reached」の場合、本関数をリトライする
-            if "Could not parse response content as the length limit was reached" in str(e):
-                return self.getChatCompletionJsonStructuredMode(messages, temperature, top_p, structure)
+            logging.error(f'🚀❌Error at getChatCompletion: {e}')
+            raise e
     
     def getEmbedding(self, input):
         try:

@@ -20,6 +20,7 @@ export const getOnYourData = async (message: string): Promise<any[]> => {
     let systemMessage = 'あなたが持っている知識は使ってはいけません。 "検索結果" と画像の情報のみを使い回答しなさい。わからない場合は「分かりません。」と回答しなさい。';
     systemMessage += '# 検索結果\n'
     let images: string[] = [];
+    let responseImageUrl: string = "";
     for (const result of cosmosItems) {
       // ループ番号を追加
       systemMessage += '## ' + (cosmosItems.indexOf(result) + 1) + '\n' + result.content + '\n\n';;
@@ -27,12 +28,17 @@ export const getOnYourData = async (message: string): Promise<any[]> => {
       if (result.is_contain_image === true) {
         const image = await getBase64File(result.image_blob_path);
         images.push(image);
+
+        responseImageUrl += result.image_blob_path + '  \n';
       }
     }
 
     // OpenAI へのリクエスト
     const result = await getChatCompletions(systemMessage, message, images);
     let aiMessage = result[0].message.content;
+    // aiMessageとresponseImageUrlを改行でつなぐ
+    aiMessage += '  \n  \n' + "◆参考画像";
+    aiMessage += '  \n' + responseImageUrl;
 
     resolve(aiMessage);
 

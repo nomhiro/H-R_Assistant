@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "RAG Architecture DeepDive",
-  description: "RAGアーキテクチャ入門",
+  title: "H&R Assistant",
+  description: "H&R アシスタント",
 };
 
 export default function RootLayout({

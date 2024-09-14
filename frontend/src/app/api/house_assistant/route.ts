@@ -55,7 +55,8 @@ export const POST = async (
 
     return NextResponse.json({ aiMessage }, { status: 200 });
   } catch (error: any) {
-    return NextResponse.json({ aiMessage: error.message }, { status: 500 });
+    console.error('🚀Error:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 };
 

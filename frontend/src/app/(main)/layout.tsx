@@ -10,7 +10,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     <div className='flex flex-col h-screen'>
       <Provider store={store}>
         <Header />
-        <main className='bg-slate-50 flex-1 overflow-auto'>{children}</main>
+        <main className='bg-slate-50 flex-1 overflow-auto p-2 sm:p-6 md:p-8'>{children}</main>
       </Provider>
     </div>
   )

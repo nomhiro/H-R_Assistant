@@ -221,6 +221,7 @@ def EventGridTrigger(azeventgrid: func.EventGridEvent):
             # その他のイベントの場合
             logging.info(f"🚀Event Type: {event_dict.get('event_type')}")
             
+    
     except Exception as e:
         logging.error(f"🚀❌Error at BlobTriggerEventGrid: {e}")
         raise e

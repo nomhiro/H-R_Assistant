@@ -24,10 +24,10 @@ app = func.FunctionApp()
 
 STR_AI_SYSTEMMESSAGE = """
 ##制約条件
-- 画像内の情報を、Markdown形式に整理しなさい。
+- 画像内の情報を読み取り、文章にしてください。
 - 図や表が含まれる場合、図や表の内容を理解できるように説明する文章にしなさい。
 - 回答形式 以外の内容は記載しないでください。
-- 回答の最初に「```json」を含めないこと。
+- 同じ言葉を絶対に繰り返さないこと。
 
 ##回答形式##
 {
@@ -41,17 +41,14 @@ STR_AI_SYSTEMMESSAGE = """
 - keywords: 画像内の情報で重要なキーワードをkeywordsに記載してください。カンマ区切りで複数記載可能です。
 - is_contain_image: 図や表などの画像で保存しておくべき情報が含まれている場合はtrue、それ以外はfalseを記載してください。
 """
-STR_AI_USERMESSAGE = """画像の内容を用いて回答しなさい。Json形式でのみ回答してください。"""
-STR_SAMPLE_USERMESSAGE = """画像の内容を用いて回答しなさい。Json形式でのみ回答してください。"""
-STR_SAMPLE_AIRESPONSE = """{
-    "content":"画像をテキストに変換した文字列",
-    "keywords": "word1, word2, word3"
-}"""
 
 BLOB_TRIGGER_PATH = "rag-docs"
 
 BLOB_CONTAINER_NAME_IMAGE = "rag-images"
 BLOB_CONNECTION = os.getenv("BLOB_CONNECTION")
+
+# Define the maximum allowed length for the response content
+MAX_CONTENT_LENGTH = 8192
 
 @app.event_grid_trigger(arg_name="azeventgrid")
 def EventGridTrigger(azeventgrid: func.EventGridEvent):
@@ -150,15 +147,17 @@ def EventGridTrigger(azeventgrid: func.EventGridEvent):
                     })
                     messages = []
                     messages.append({"role": "system", "content": STR_AI_SYSTEMMESSAGE})
-                    messages.append({"role": "user", "content": STR_SAMPLE_USERMESSAGE})
-                    messages.append({"role": "user", "content": STR_SAMPLE_AIRESPONSE})
-                    messages.append({"role": "user", "content": STR_AI_USERMESSAGE})
                     messages.append({"role": "user", "content": image_content})
                     
                     # GPT4oにはjsonフォーマット指定がないので使えない。
                     response = azure_openai_service.getChatCompletionJsonStructuredMode(messages, 0, 0, DocumentStructure)
                     
+                    # Check and truncate the response content if necessary
                     doc_structured = response.choices[0].message.parsed
+                    if len(doc_structured.content) > MAX_CONTENT_LENGTH:
+                        logging.warning(f"Response content length ({len(doc_structured.content)}) exceeds the limit. Truncating to {MAX_CONTENT_LENGTH} characters.")
+                        doc_structured.content = doc_structured.content[:MAX_CONTENT_LENGTH]
+
                     logging.info(f"🚀Response Format: {doc_structured}")
                     
                     # contentをベクトル値に変換

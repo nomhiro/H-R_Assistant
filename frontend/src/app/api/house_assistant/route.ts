@@ -1,11 +1,11 @@
 /**
- * RAG extra用のAPIルート
+ * house_assistant用のAPIルート
  */
 import { NextRequest } from 'next/dist/server/web/spec-extension/request';
 import { NextResponse } from 'next/dist/server/web/spec-extension/response';
-import { getChatCompletions, getEmbedding } from '../../../util/extra-1/openai-exrtra-shrkm';
-import { getItemsByVector } from '../../../util/extra-1/cosmos'
-import { getBase64File } from '../../../util/extra-1/blob'
+import { getChatCompletions, getEmbedding } from '../../../util/openai';
+import { getItemsByVector } from '../../../util/cosmos'
+import { getBase64File } from '../../../util/blob'
 
 export const POST = async (
   req: NextRequest,
@@ -13,7 +13,7 @@ export const POST = async (
   try {
     const {message} = await req.json();
     
-    console.log('🚀RAG-extra用のAPIルート');
+    console.log('🚀House Assistant用のAPIルート');
 
     // messageを検索するための文章に変換
     // 未実装

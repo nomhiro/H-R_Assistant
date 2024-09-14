@@ -8,7 +8,7 @@ aeg-event-type: Notification
 {
   "id": "1",
   "eventType": "Microsoft.Storage.BlobCreated",
-  "subject": "/blobServices/default/containers/rag-docs/blobs/スマートハイムナビ/AiSEG2/AiSEG2_基本施工マニュアル.pdf", 
+  "subject": "/blobServices/default/containers/rag-docs/blobs/お手入れ読本/お手入れ読本.pdf", 
   "eventTime": "2024-08-11T17:02:19.6069787Z",
   "data": {
     "api": "PutBlob", 
@@ -18,7 +18,7 @@ aeg-event-type: Notification
     "contentType": "application/pdf", 
     "contentLength": 2381873, 
     "blobType": "BlockBlob", 
-    "url": "https://saragextra1.blob.core.windows.net/rag-docs/スマートハイムナビ/AiSEG2/AiSEG2_基本施工マニュアル.pdf", 
+    "url": "https://saragextra1.blob.core.windows.net/rag-docs/お手入れ読本/お手入れ読本.pdf", 
     "sequencer": "00000000000000000000000000012F09000000000003ceb0", 
     "storageDiagnostics": {
       "batchId": "5e7b9236-0006-004c-00df-ebd23d000000"

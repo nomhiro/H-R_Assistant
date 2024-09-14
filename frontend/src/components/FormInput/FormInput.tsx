@@ -23,7 +23,7 @@ const FormInput = () => {
     );
 
     // Send message to the OpenAI
-    const url = pathname === '/' ? '/api/onyourdata' : pathname === '/rag-extra-1' ? '/api/rag-extra-1' : pathname === '/rag-extra-2' ? '/api/rag-extra-2' : '/api/onyourdata';
+    const url = pathname === '/' ? '/api/house_assistant' : '/api/house_assistant';
     const response = await fetch(`${url}`, {
       method: 'POST',
       headers: {

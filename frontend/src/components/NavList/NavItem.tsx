@@ -13,16 +13,11 @@ interface NavItemProps {
 const NavItem: React.FC<NavItemProps> = ({ label, link, icon }) => {
   const pathname = usePathname();
   return (
-    <Link
-      href={link}
-      className={`flex p-4 items-center w-full hover:bg-gray-600 font-medium ${
-        pathname === link ? 'bg-gray-600 border-l-4 border-r-gray-100' : ''
-      }`}
-    >
-      <div className="mr-3">{icon}</div>
+    <Link href={link} className={`flex p-4 items-center w-full hover:bg-gray-600 font-medium ${pathname === link ? 'bg-gray-600 border-l-4 border-r-gray-100' : ''}`}>
+      <div className='mr-3' >{icon}</div>
       <div>{label}</div>
     </Link>
-  );
-};
+  )
+}
 
 export default NavItem;

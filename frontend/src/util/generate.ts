@@ -1,23 +1,9 @@
-/**
- * RAG extra用のAPIルート
- */
-import { NextRequest } from 'next/dist/server/web/spec-extension/request';
-import { NextResponse } from 'next/dist/server/web/spec-extension/response';
-import { getChatCompletions, getEmbedding } from '../../../util/extra-1/openai-exrtra-shrkm';
-import { getItemsByVector } from '../../../util/extra-1/cosmos'
-import { getBase64File } from '../../../util/extra-1/blob'
+import { getEmbedding, getChatCompletions } from './openai'; 
+import { getItemsByVector } from './cosmos';
+import { getBase64File } from './blob';
 
-export const POST = async (
-  req: NextRequest,
-) => {
-  try {
-    const {message} = await req.json();
-    
-    console.log('🚀RAG-extra用のAPIルート');
-
-    // messageを検索するための文章に変換
-    // 未実装
-
+export const getOnYourData = async (message: string): Promise<any[]> => {
+  return new Promise(async (resolve, reject) => {
     // ベクトル化
     console.log('🚀Get embedding from Azure OpenAI.');
     const embeddedMessage = await getEmbedding(message);
@@ -33,7 +19,7 @@ export const POST = async (
     console.log('🚀Create system message and image_content.');
     let systemMessage = 'あなたが持っている知識は使ってはいけません。 "検索結果" と画像の情報のみを使い回答しなさい。わからない場合は「分かりません。」と回答しなさい。';
     systemMessage += '# 検索結果\n'
-    let images = [];
+    let images: string[] = [];
     for (const result of cosmosItems) {
       // ループ番号を追加
       systemMessage += '## ' + (cosmosItems.indexOf(result) + 1) + '\n' + result.content + '\n\n';;
@@ -47,15 +33,8 @@ export const POST = async (
     // OpenAI へのリクエスト
     const result = await getChatCompletions(systemMessage, message, images);
     let aiMessage = result[0].message.content;
-    
-    
-    // 推論結果に参照ドキュメント番号付与 (option)
-    // 未実装
 
-    return NextResponse.json({ aiMessage }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ aiMessage: error.message }, { status: 500 });
-  }
-};
+    resolve(aiMessage);
 
-export const dynamic = 'force-dynamic';
+  })
+}

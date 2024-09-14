@@ -29,16 +29,18 @@ export const getOnYourData = async (message: string): Promise<any[]> => {
         const image = await getBase64File(result.image_blob_path);
         images.push(image);
 
-        responseImageUrl += result.image_blob_path + '  \n';
+        responseImageUrl += result.image_blob_path + ': ' + result.SimilarityScore + '  \n';
       }
     }
 
     // OpenAI へのリクエスト
     const result = await getChatCompletions(systemMessage, message, images);
     let aiMessage = result[0].message.content;
-    // aiMessageとresponseImageUrlを改行でつなぐ
-    aiMessage += '  \n  \n' + "◆参考画像";
-    aiMessage += '  \n' + responseImageUrl;
+    // もしimageがあればaiMessageとresponseImageUrlを改行でつなぐ
+    if (responseImageUrl !== "") {
+      aiMessage += '  \n  \n' + "◆参考画像";
+      aiMessage += '  \n' + responseImageUrl;
+    }
 
     resolve(aiMessage);
 

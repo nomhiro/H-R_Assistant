@@ -69,19 +69,10 @@ def regist_pdf(azure_openai_service: AzureOpenAIService,
         
         # Check and truncate the response content if necessary
         doc_structured = response.choices[0].message.parsed
-        if len(doc_structured.content) > MAX_CONTENT_LENGTH:
-            logging.warning(f"Response content length ({len(doc_structured.content)}) exceeds the limit. Truncating to {MAX_CONTENT_LENGTH} characters.")
-            doc_structured.content = doc_structured.content[:MAX_CONTENT_LENGTH]
 
         logging.info(f"🚀Response Format: {doc_structured}")
         
-        # contentをベクトル値に変換
-        # docu_structured.contentは8192トークン以内にする
-        text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
-            model_name="gpt-4", chunk_size=7000, chunk_overlap=0
-        )
-        spilitted_doc_structured = text_splitter.split_text(doc_structured.content)
-        content_vector = azure_openai_service.getEmbedding(spilitted_doc_structured)
+        content_vector = azure_openai_service.getEmbedding(blob_url + '\n' + doc_structured.content)
         
         # is_contain_imageがTrueの場合は、StorageAccountのBlobの"rag-images"に画像をアップロード
         if doc_structured.is_contain_image:

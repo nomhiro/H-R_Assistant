@@ -16,22 +16,18 @@ logging.basicConfig(level=logging.INFO)
 app = func.FunctionApp()
 
 STR_AI_SYSTEMMESSAGE = """
-##制約条件
-- 画像内の情報を読み取りなさい。
-- 表が含まれる場合、Markdown形式で表を記載しなさい。
-- 図が含まれる場合、図の内容を理解できるように説明する文章にしなさい。
-- 回答形式 以外の内容は記載しないでください。
+画像内の文字列をOCRし漏れなく出力しなさい。
 
 ##回答形式##
 {
-    "content":"画像の内容を説明した文章",
+    "content":"画像の情報を漏れなく記載した文章。",
     "keywords": "カンマ区切りのキーワード群",
     "is_contain_image": "図や表などの画像で保存しておくべき情報が含まれている場合はtrue、それ以外はfalse"
 }
 
 ##記載情報##
-- content: 画像内の情報はcontentに記載してください。画像内の情報を漏れなく記載してください。
-- keywords: 画像内の情報で重要なキーワードをkeywordsに記載してください。カンマ区切りで複数記載可能です。
+- content: 画像内の表は、Markdown形式で記載しなさい。
+- keywords:  画像内の情報で重要なキーワードをkeywordsに記載してください。カンマ区切りで複数記載可能です。
 - is_contain_image: 図や表などの画像で保存しておくべき情報が含まれている場合はtrue、それ以外はfalseを記載してください。
 """
 

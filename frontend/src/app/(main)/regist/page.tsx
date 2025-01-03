@@ -48,18 +48,26 @@ export default function AssistantPage() {
     }
   };
 
-  const handleTextUpload = async () => {
-    setIsUploading(true);
-    try {
-      await axios.post("/api/data/regist", { text });
-      alert("テキストがアップロードされました");
-    } catch (error) {
-      console.error("テキストアップロードエラー:", error);
-      alert("テキストアップロードに失敗しました");
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  // const handleTextUpload = async () => {
+  //   if (text.trim() === "") {
+  //     alert("テキストを入力してください");
+  //     return;
+  //   } else if (folderPath.trim() === "") {
+  //     alert("フォルダパスを入力してください");
+  //     return;
+  //   }
+
+  //   setIsUploading(true);
+  //   try {
+  //     await axios.post("/api/data/regist", { text });
+  //     alert("テキストがアップロードされました");
+  //   } catch (error) {
+  //     console.error("テキストアップロードエラー:", error);
+  //     alert("テキストアップロードに失敗しました");
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen w-full p-4 gap-4">
@@ -92,14 +100,23 @@ export default function AssistantPage() {
         </TabPanel>
         <TabPanel>
           <div className="flex flex-col items-center gap-4">
-            <textarea value={text} onChange={handleTextChange} className="p-2 border rounded w-full h-40" />
-            <button
-              className="bg-blue-500 text-white rounded p-2 w-fit"
-              onClick={handleTextUpload}
-              disabled={isUploading}
-            >
-              {isUploading ? "アップロード中..." : "アップロード"}
-            </button>
+            <div className="flex flex-col items-start gap-4 w-1/2"> {/* 中央部分で左揃え */}
+              {/* <input
+                type="text"
+                value={folderPath}
+                onChange={handleFolderPathChange}
+                placeholder="フォルダパスを入力（最初と最後の/は不要）"
+                className="p-2 border rounded w-full"
+              />
+              <textarea value={text} onChange={handleTextChange} className="p-2 border rounded w-full h-40" />
+              <button
+                className="bg-blue-500 text-white rounded p-2 w-fit"
+                onClick={handleTextUpload}
+                disabled={isUploading}
+              >
+                {isUploading ? "アップロード中..." : "アップロード"}
+              </button> */}
+            </div>
           </div>
         </TabPanel>
       </Tabs>

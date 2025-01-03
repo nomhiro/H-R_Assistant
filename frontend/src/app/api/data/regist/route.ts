@@ -13,8 +13,7 @@ export async function POST(req: NextRequest) {
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
       file = formData.get("file");
-      folderPath = formData.get("folderPath");
-
+      folderPath = formData.get("folderPath") as string;
 
       // ファイルがアップロードされているか確認
       if (file) {

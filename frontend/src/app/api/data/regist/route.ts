@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { uploadFileToFolder } from "../../../../util/blob";
+import { uploadFileToFolder } from "@/util/blob";
 
 export async function POST(req: NextRequest) {
   try {

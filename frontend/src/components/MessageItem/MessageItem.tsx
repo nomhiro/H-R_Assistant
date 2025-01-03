@@ -7,7 +7,7 @@ const MessageItem = ({ message, isMan }: { message: string; isMan: boolean }) =>
   return isMan ? (
     <div className="flex mb-4 justify-end">
       <div className="block max-w-3xl p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 font-normal text-gray-700">
-        <ReactMarkdown>
+        <ReactMarkdown className="markdown">
           {message}
         </ReactMarkdown>
       </div>
@@ -25,7 +25,7 @@ const MessageItem = ({ message, isMan }: { message: string; isMan: boolean }) =>
         </div>
       </div>
       <div className="block max-w-3xl p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 font-normal text-gray-700">
-        <ReactMarkdown>
+        <ReactMarkdown className="markdown">
           {message}
         </ReactMarkdown>
       </div>

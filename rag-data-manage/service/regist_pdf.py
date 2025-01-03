@@ -14,15 +14,16 @@ from domain.document_structure import DocumentStructure
 from service.openai_service.openai_service import AzureOpenAIService
 from service.cosmos_service.cosmos_service import CosmosService
 
-def regist_pdf(azure_openai_service: AzureOpenAIService, 
-                 cosmos_service: CosmosService, 
-                 blob_service_client: BlobServiceClient,
-                 data_as_file: BytesIO,
-                 STR_AI_SYSTEMMESSAGE: str,
-                 BLOB_CONTAINER_NAME_IMAGE: str,
-                 MAX_CONTENT_LENGTH: int,
-                 file_name: str,
-                 blob_url: str):
+
+def regist_pdf(azure_openai_service: AzureOpenAIService,
+               cosmos_service: CosmosService,
+               blob_service_client: BlobServiceClient,
+               data_as_file: BytesIO,
+               STR_AI_SYSTEMMESSAGE: str,
+               BLOB_CONTAINER_NAME_IMAGE: str,
+               MAX_CONTENT_LENGTH: int,
+               file_name: str,
+               blob_url: str):
     # Create a temporary file
     temp_path = ""
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp:
@@ -44,12 +45,12 @@ def regist_pdf(azure_openai_service: AzureOpenAIService,
         img.save(binary_data, format='PNG')
         binary_data.seek(0)
         base64_data = base64.b64encode(binary_data.getvalue()).decode()
-        
+
         # OpenAIに推論させるためのメッセージを作成
         image_content = []
         image_content.append({
             "type": "image_url",
-            "image_url": 
+            "image_url":
             {
                 "url": f"data:image/jpeg;base64,{base64_data}"
             },
@@ -57,48 +58,54 @@ def regist_pdf(azure_openai_service: AzureOpenAIService,
         messages = []
         messages.append({"role": "system", "content": STR_AI_SYSTEMMESSAGE})
         messages.append({"role": "user", "content": image_content})
-        
+
         try:
             # GPT4oにはjsonフォーマット指定がないので使えない。
-            response = azure_openai_service.getChatCompletionJsonStructuredMode(messages, 0, 0, DocumentStructure)
-        except Exception as e:     
+            response = azure_openai_service.getChatCompletionJsonStructuredMode(
+                messages, 0, 0, DocumentStructure)
+        except Exception as e:
             # エラーが「Could not parse response content as the length limit was reached」の場合、そのページの処理をスキップする
             if "Could not parse response content as the length limit was reached" in str(e):
-                logging.warning(f"🚀❌Error page {page.number} of doc '{file_name}': {e}")
+                logging.warning(
+                    f"🚀❌Error page {page.number} of doc '{file_name}': {e}")
                 continue
-        
+
         # Check and truncate the response content if necessary
         doc_structured = response.choices[0].message.parsed
 
         logging.info(f"🚀Response Format: {doc_structured}")
-        
-        content_vector = azure_openai_service.getEmbedding(blob_url + '\n' + doc_structured.content)
-        
+
+        # 格納するパスを生成。BlobURLから フォルダ名/ファイル名 を取得する
+        parsed_url = urlparse(blob_url)
+        blob_path = parsed_url.path
+        blob_path = blob_path[1:] if blob_path.startswith("/") else blob_path
+
+        content_vector = azure_openai_service.getEmbedding(
+            blob_path + '\n' + doc_structured.content
+        )
+
         # is_contain_imageがTrueの場合は、StorageAccountのBlobの"rag-images"に画像をアップロード
         if doc_structured.is_contain_image:
-            # 格納するパスを生成。TriggerされたBlobのパスのフォルダとファイル名を、格納先フォルダにする。
-            parsed_url = urlparse(blob_url)
-            path_parts = parsed_url.path.split('/')
-            index = path_parts.index('rag-docs')
-            
             stored_image_path = file_name + "_page" + str(page.number) + ".png"
-            
-            blob_client = blob_service_client.get_blob_client(container=BLOB_CONTAINER_NAME_IMAGE, blob=stored_image_path)
-            blob_client.upload_blob(base64.b64decode(base64_data), overwrite=True)
+
+            blob_client = blob_service_client.get_blob_client(
+                container=BLOB_CONTAINER_NAME_IMAGE, blob=stored_image_path)
+            blob_client.upload_blob(
+                base64.b64decode(base64_data), overwrite=True)
             logging.info(f"🚀Uploaded Image to Blob: {stored_image_path}")
-        
+
         # CosmosDBに登録するアイテムのオブジェクト
         cosmos_page_obj = CosmosPageObj(file_name=file_name,
                                         file_path=blob_url,
                                         page_number=page.number,
-                                        content=doc_structured.content, 
+                                        content='# タイトル\n' + blob_path + '\n' + doc_structured.content,
                                         content_vector=content_vector,
                                         keywords=doc_structured.keywords,
                                         delete_flag=False,
                                         is_contain_image=doc_structured.is_contain_image,
                                         image_blob_path=stored_image_path if doc_structured.is_contain_image else None)
-        
+
         cosmos_service.insert_data(cosmos_page_obj.to_dict())
-        
+
     # tempを削除
     temp.close()

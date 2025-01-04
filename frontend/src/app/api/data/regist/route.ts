@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { uploadFileToFolder } from "@/util/blob";
 
-export async function POST(req: NextRequest) {
+export const POST = async (req: NextRequest) => {
   try {
     const contentType = req.headers.get("content-type") || "";
     let file = null;

@@ -63,13 +63,16 @@ export const uploadFileToFolder = (folderPath: string, file: File): Promise<void
         try {
             const blockBlobClient = docsContainerClient.getBlockBlobClient(`${folderPath}/${file.name}`);
 
+            console.log("🚀ファイルのarrayBufferを取得します");
             const arrayBuffer = await (file as File).arrayBuffer();
+            console.log("🚀arrayBuffer取得成功");
+
             await blockBlobClient.uploadData(new Uint8Array(arrayBuffer));
 
-            console.log(`  🚀Upload success: ${folderPath}/${file.name}`);
+            console.log(`🚀Upload success: ${folderPath}/${file.name}`);
             resolve();
         } catch (error) {
-            console.error(`  ❌Upload error: ${folderPath}/${file.name}`, error);
+            console.error(`❌Upload error: ${folderPath}/${file.name}`, error);
             reject(error);
         }
     });

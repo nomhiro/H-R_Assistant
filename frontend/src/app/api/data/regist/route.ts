@@ -17,23 +17,23 @@ export const POST = async (req: NextRequest) => {
 
       // ファイルがアップロードされているか確認
       if (file && folderPath) {
-        console.log(" 🚀ファイル（PDF、画像ファイル）を登録します");
-        console.log(" 🚀フォルダパス: ", folderPath);
-        console.log(" 🚀ファイル名: ", (file as File).name);
+        console.log("🚀ファイル（PDF、画像ファイル）を登録します");
+        console.log("🚀フォルダパス: ", folderPath);
+        console.log("🚀ファイル名: ", (file as File).name);
         // フォルダパスが文字列であることを確認
         if (typeof folderPath === 'string') {
-          console.log(" 🚀フォルダパスは文字列です");
+          console.log("🚀フォルダパスは文字列です");
           if (file instanceof File) {
-            console.log(" 🚀ファイルはFileインスタンスです");
+            console.log("🚀ファイルはFileインスタンスです");
             await uploadFileToFolder(folderPath, file);
           } else {
-            console.log(" ❌ファイルがFileインスタンスではありません");
+            console.log("❌ファイルがFileインスタンスではありません");
           }
         } else {
-          console.log(" ❌フォルダパスが無効です。");
+          console.log("❌フォルダパスが無効です。");
         }
       } else {
-        console.log(" ❌ファイルまたはフォルダパスがアップロードされていません。");
+        console.log("❌ファイルまたはフォルダパスがアップロードされていません。");
       }
     } else if (contentType.includes("application/json")) {
       const json = await req.json();

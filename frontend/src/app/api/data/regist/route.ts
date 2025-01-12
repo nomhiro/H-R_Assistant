@@ -11,6 +11,10 @@ export const POST = async (req: NextRequest) => {
       const file = formData.get("file");
       const folderPath = formData.get("folderPath");
 
+      console.log("formData:", formData);
+      console.log("file:", file);
+      console.log("folderPath:", folderPath);
+
       if (file && typeof folderPath === 'string') {
         console.log("🚀ファイル（PDF、画像ファイル）を登録します");
         console.log("🚀フォルダパス: ", folderPath);

@@ -40,4 +40,4 @@ export const POST = async (req: NextRequest) => {
     console.error("❌ データ登録エラー:", error);
     return NextResponse.json({ message: "❌ データ登録に失敗しました" }, { status: 500 });
   }
-}
+};

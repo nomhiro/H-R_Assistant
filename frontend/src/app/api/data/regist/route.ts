@@ -6,41 +6,39 @@ export const POST = async (req: NextRequest) => {
   try {
     const contentType = req.headers.get("content-type") || "";
 
-    // ファイルアップロードの場合と、テキストデータアップロードの場合で処理を分岐
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
       const file = formData.get("file");
       const folderPath = formData.get("folderPath") as string;
 
-      // ファイルがアップロードされているか確認
       if (file && folderPath) {
         console.log("🚀ファイル（PDF、画像ファイル）を登録します");
         console.log("🚀フォルダパス: ", folderPath);
         console.log("🚀ファイル名: ", (file as File).name);
-        // フォルダパスが文字列であることを確認
+
         if (typeof folderPath === 'string') {
           console.log("🚀フォルダパスは文字列です");
           if (file instanceof File) {
             console.log("🚀ファイルはFileインスタンスです");
             await uploadFileToFolder(folderPath, file);
           } else {
-            console.log("❌ファイルがFileインスタンスではありません");
+            console.log("❌ ファイルがFileインスタンスではありません");
           }
         } else {
-          console.log("❌フォルダパスが無効です。");
+          console.log("❌ フォルダパスが無効です。");
         }
       } else {
-        console.log("❌ファイルまたはフォルダパスがアップロードされていません。");
+        console.log("❌ ファイルまたはフォルダパスがアップロードされていません。");
       }
     } else if (contentType.includes("application/json")) {
       const json = await req.json();
       const text = json.text;
-      console.log(" 🚀テキストデータを登録します。text: ", text);
+      console.log("🚀 テキストデータを登録します。text: ", text);
     }
 
-    return NextResponse.json({ message: " 🚀データが正常に登録されました" }, { status: 200 });
+    return NextResponse.json({ message: "📄 データが正常に登録されました" }, { status: 200 });
   } catch (error) {
-    console.error(" ❌データ登録エラー:", error);
-    return NextResponse.json({ message: " ❌データ登録に失敗しました" }, { status: 500 });
+    console.error("❌ データ登録エラー:", error);
+    return NextResponse.json({ message: "❌ データ登録に失敗しました" }, { status: 500 });
   }
 }

@@ -5,9 +5,15 @@ import { uploadFileToFolder } from "@/util/blob";
 export const POST = async (req: NextRequest) => {
   try {
     const contentType = req.headers.get("content-type") || "";
-    let file = null;
-    let folderPath = null;
+    let file: FormDataEntryValue | null = null;
+    let folderPath: string | null = null;
     let text = null;
+
+    // content-typeヘッダーが正しく設定されているか確認
+    if (!contentType) {
+      console.error(" ❌content-typeヘッダーが設定されていません。");
+      return NextResponse.json({ message: " ❌content-typeヘッダーが設定されていません。" }, { status: 400 });
+    }
 
     // ファイルアップロードの場合と、テキストデータアップロードの場合で処理を分岐
     if (contentType.includes("multipart/form-data")) {

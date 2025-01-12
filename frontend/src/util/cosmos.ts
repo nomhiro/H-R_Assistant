@@ -1,9 +1,10 @@
 import {
   CosmosClient
 } from "@azure/cosmos";
+import { CosmosItem } from "../models/models";
 
 // ベクトル検索
-export const getItemsByVector = async (embedding: number[], keywords: string[]): Promise<any[]> => {
+export const getItemsByVector = async (embedding: number[], keywords: string[]): Promise<CosmosItem[]> => {
   return new Promise(async (resolve, reject) => {
     const cosmosClient = new CosmosClient(process.env.COSMOS_CONNECTION_STRING!);
     const database = cosmosClient.database(process.env.COSMOS_DATABASE_NAME!);

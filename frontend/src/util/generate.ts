@@ -42,7 +42,7 @@ export const getOnYourData = async (message: string): Promise<string> => {
 
       // OpenAI へのリクエスト
       const result = await getChatCompletions(systemMessage, message, images);
-      let aiMessage = result[0].message.content;
+      const aiMessage = result[0].message.content;
       // 検索結果(cosmosItem)があればaiMessageと改行でつなぐ。スコアもつける\
       let displaySearchedDoc = '';
       if (cosmosItems.length > 0) {
@@ -56,7 +56,7 @@ export const getOnYourData = async (message: string): Promise<string> => {
 
       resolve(resultMessage);
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('  ❌Error in getOnYourData:', error);
       reject(error);
     }

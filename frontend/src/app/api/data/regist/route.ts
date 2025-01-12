@@ -18,7 +18,11 @@ export const POST = async (req: NextRequest) => {
 
         if (file instanceof File) {
           console.log("🚀ファイルはFileインスタンスです");
-          await uploadFileToFolder(folderPath, file);
+          try {
+            await uploadFileToFolder(folderPath, file);
+          } catch (error) {
+            console.error(`❌ ファイルのアップロード中にエラーが発生しました: ${error}`);
+          }
         } else {
           console.log("❌ ファイルがFileインスタンスではありません");
         }

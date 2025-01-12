@@ -22,7 +22,7 @@ export const POST = async (req: NextRequest) => {
       folderPath = formData.get("folderPath") as string;
 
       // ファイルがアップロードされているか確認
-      if (file) {
+      if (file && folderPath) {
         console.log(" 🚀ファイル（PDF、画像ファイル）を登録します");
         console.log(" 🚀フォルダパス: ", folderPath);
         console.log(" 🚀ファイル名: ", (file as File).name);
@@ -33,7 +33,7 @@ export const POST = async (req: NextRequest) => {
           console.log(" ❌フォルダパスが無効です。");
         }
       } else {
-        console.log(" ❌ファイルがアップロードされていません。");
+        console.log(" ❌ファイルまたはフォルダパスがアップロードされていません。");
       }
     } else if (contentType.includes("application/json")) {
       const json = await req.json();

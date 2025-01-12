@@ -9,23 +9,18 @@ export const POST = async (req: NextRequest) => {
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
       const file = formData.get("file");
-      const folderPath = formData.get("folderPath") as string;
+      const folderPath = formData.get("folderPath");
 
-      if (file && folderPath) {
+      if (file && typeof folderPath === 'string') {
         console.log("🚀ファイル（PDF、画像ファイル）を登録します");
         console.log("🚀フォルダパス: ", folderPath);
         console.log("🚀ファイル名: ", (file as File).name);
 
-        if (typeof folderPath === 'string') {
-          console.log("🚀フォルダパスは文字列です");
-          if (file instanceof File) {
-            console.log("🚀ファイルはFileインスタンスです");
-            await uploadFileToFolder(folderPath, file);
-          } else {
-            console.log("❌ ファイルがFileインスタンスではありません");
-          }
+        if (file instanceof File) {
+          console.log("🚀ファイルはFileインスタンスです");
+          await uploadFileToFolder(folderPath, file);
         } else {
-          console.log("❌ フォルダパスが無効です。");
+          console.log("❌ ファイルがFileインスタンスではありません");
         }
       } else {
         console.log("❌ ファイルまたはフォルダパスがアップロードされていません。");

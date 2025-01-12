@@ -9,31 +9,25 @@ export const POST = async (req: NextRequest) => {
     let folderPath: string | null = null;
     let text = null;
 
-    if (!contentType) {
-      console.error(" ❌content-typeヘッダーが設定されていません。");
-      return NextResponse.json({ message: " ❌content-typeヘッダーが設定されていません。" }, { status: 400 });
-    }
-
+    // ファイルアップロードの場合と、テキストデータアップロードの場合で処理を分岐
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
       file = formData.get("file");
       folderPath = formData.get("folderPath") as string;
 
-      if (file && folderPath) {
+      // ファイルがアップロードされているか確認
+      if (file) {
         console.log(" 🚀ファイル（PDF、画像ファイル）を登録します");
         console.log(" 🚀フォルダパス: ", folderPath);
         console.log(" 🚀ファイル名: ", (file as File).name);
+        // フォルダパスが文字列であることを確認
         if (typeof folderPath === 'string') {
-          console.log(" 🚀アップロードを開始します");
           await uploadFileToFolder(folderPath, file as File);
-          console.log(" 🚀アップロードが完了しました");
         } else {
           console.log(" ❌フォルダパスが無効です。");
-          return NextResponse.json({ message: " ❌フォルダパスが無効です。" }, { status: 400 });
         }
       } else {
-        console.log(" ❌ファイルまたはフォルダパスがアップロードされていません。");
-        return NextResponse.json({ message: " ❌ファイルまたはフォルダパスがアップロードされていません。" }, { status: 400 });
+        console.log(" ❌ファイルがアップロードされていません。");
       }
     } else if (contentType.includes("application/json")) {
       const json = await req.json();

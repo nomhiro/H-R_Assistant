@@ -1,7 +1,5 @@
 import {
-  CosmosClient,
-  Database,
-  Container,
+  CosmosClient
 } from "@azure/cosmos";
 
 // ベクトル検索
@@ -18,15 +16,20 @@ export const getItemsByVector = async (embedding: number[], keywords: string[]):
     const keywordConditions = keywords.map((keyword, index) => `ARRAY_CONTAINS(c.keywords, @keyword${index})`).join(' OR ');
     const keywordParameters = keywords.map((keyword, index) => ({ name: `@keyword${index}`, value: keyword }));
 
-    const { resources } = await container.items
-      .query({
-        query: `SELECT TOP 10 c.file_name, c.content, c.is_contain_image, c.image_blob_path, VectorDistance(c.content_vector, @embedding) AS SimilarityScore FROM c WHERE (${keywordConditions}) AND VectorDistance(c.content_vector, @embedding) > ${vectorScore} ORDER BY VectorDistance(c.content_vector, @embedding)`,
-        parameters: [
-          { name: "@embedding", value: embedding },
-          ...keywordParameters
-        ]
-      })
-      .fetchAll();
-    resolve(resources);
+    try {
+      const { resources } = await container.items
+        .query({
+          query: `SELECT TOP 10 c.file_name, c.content, c.is_contain_image, c.image_blob_path, VectorDistance(c.content_vector, @embedding) AS SimilarityScore FROM c WHERE (${keywordConditions}) AND VectorDistance(c.content_vector, @embedding) > ${vectorScore} ORDER BY VectorDistance(c.content_vector, @embedding)`,
+          parameters: [
+            { name: "@embedding", value: embedding },
+            ...keywordParameters
+          ]
+        })
+        .fetchAll();
+      resolve(resources);
+    } catch (error) {
+      console.error('❌Error querying CosmosDB.', error);
+      reject(error);
+    }
   });
 };

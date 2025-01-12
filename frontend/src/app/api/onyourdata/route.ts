@@ -7,7 +7,7 @@ export const POST = async (req: NextRequest) => {
     const { message } = await req.json()
     const aiMessage = await getOnYourData(message)
     return NextResponse.json({ aiMessage }, { status: 200 })
-  } catch (error: any) {
-    return NextResponse.json({ aiMessage: error.message }, { status: 500 })
+  } catch (error) {
+    return NextResponse.json({ aiMessage: error }, { status: 500 })
   }
 }

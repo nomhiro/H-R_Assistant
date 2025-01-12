@@ -25,8 +25,8 @@ export const getOnYourData = async (message: string): Promise<string> => {
       console.log('🚀Create system message and image_content.');
       let systemMessage = 'あなたが持っている知識は使ってはいけません。 "検索結果" と画像の情報のみを使い回答しなさい。わからない場合は「分かりません。」と回答しなさい。\nスコアが高い検索結果を優先的に使い、推論してください。';
       systemMessage += '# 検索結果\n'
-      let images: string[] = [];
-      let responseImageUrl: string = "";
+      const images: string[] = [];
+      // let responseImageUrl: string = "";
       for (const result of cosmosItems) {
         // ループ番号を追加
         systemMessage += '◆ ' + (cosmosItems.indexOf(result) + 1) + ' スコア：' + result.SimilarityScore + '\n' + result.content + '\n\n';
@@ -35,7 +35,7 @@ export const getOnYourData = async (message: string): Promise<string> => {
           const image = await getBase64File(result.image_blob_path);
           images.push(image);
 
-          responseImageUrl += result.image_blob_path + ': ' + result.SimilarityScore + '  \n';
+          // responseImageUrl += result.image_blob_path + ': ' + result.SimilarityScore + '  \n';
         }
       }
       console.log(' 🚀systemMessage: ' + systemMessage)

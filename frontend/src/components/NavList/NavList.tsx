@@ -1,6 +1,5 @@
 import React from 'react';
 import { BsRocketTakeoff } from 'react-icons/bs';
-import { FaRocket } from 'react-icons/fa';
 import NavItem from './NavItem';
 
 interface NavItemType {

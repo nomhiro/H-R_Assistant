@@ -29,7 +29,7 @@ export const getBase64File = async (file_path: string): Promise<string> => {
         let encodedData = '';
         if (downloadResponse.readableStreamBody) {
             const downloaded = await streamToBuffer(downloadResponse.readableStreamBody);
-            const encodedData = downloaded.toString('base64');
+            encodedData = downloaded.toString('base64');
             resolve(encodedData);
         } else {
             reject('readableStreamBody is undefined');
@@ -42,9 +42,9 @@ export const getBase64File = async (file_path: string): Promise<string> => {
 
 async function streamToBuffer(readableStream: NodeJS.ReadableStream): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-        const chunks: Buffer[] = [];
+        const chunks: Uint8Array[] = [];
         readableStream.on('data', (data) => {
-            chunks.push(data instanceof Buffer ? data : Buffer.from(data));
+            chunks.push(data instanceof Uint8Array ? data : new Uint8Array(data));
         });
         readableStream.on('end', () => {
             resolve(Buffer.concat(chunks));

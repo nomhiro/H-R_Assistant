@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { FaRobot } from 'react-icons/fa';
 import { GrUserManager } from 'react-icons/gr';
 import ReactMarkdown from 'react-markdown';

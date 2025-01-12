@@ -7,7 +7,6 @@ import axios from "axios";
 
 export default function AssistantPage() {
   const [file, setFile] = useState<File | null>(null);
-  const [text, setText] = useState<string>("");
   const [folderPath, setFolderPath] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
@@ -15,10 +14,6 @@ export default function AssistantPage() {
     if (e.target.files) {
       setFile(e.target.files[0]);
     }
-  };
-
-  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setText(e.target.value);
   };
 
   const handleFolderPathChange = (e: React.ChangeEvent<HTMLInputElement>) => {

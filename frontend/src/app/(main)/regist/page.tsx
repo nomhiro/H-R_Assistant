@@ -28,11 +28,11 @@ export default function AssistantPage() {
       setIsUploading(true);
 
       try {
-        await axios.post("/api/data/regist", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        // await axios.post("/api/data/regist", formData, {
+        //   headers: {
+        //     "Content-Type": "multipart/form-data",
+        //   },
+        // });
         alert("ファイルがアップロードされました");
       } catch (error) {
         console.error("ファイルアップロードエラー:", error);

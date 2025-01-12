@@ -31,9 +31,11 @@ export const POST = async (req: NextRequest) => {
           await uploadFileToFolder(folderPath, file as File);
         } else {
           console.log(" ❌フォルダパスが無効です。");
+          return NextResponse.json({ message: " ❌フォルダパスが無効です。" }, { status: 400 });
         }
       } else {
         console.log(" ❌ファイルまたはフォルダパスがアップロードされていません。");
+        return NextResponse.json({ message: " ❌ファイルまたはフォルダパスがアップロードされていません。" }, { status: 400 });
       }
     } else if (contentType.includes("application/json")) {
       const json = await req.json();

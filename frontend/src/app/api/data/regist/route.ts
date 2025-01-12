@@ -22,7 +22,13 @@ export const POST = async (req: NextRequest) => {
         console.log(" 🚀ファイル名: ", (file as File).name);
         // フォルダパスが文字列であることを確認
         if (typeof folderPath === 'string') {
-          await uploadFileToFolder(folderPath, file as File);
+          console.log(" 🚀フォルダパスは文字列です");
+          if (file instanceof File) {
+            console.log(" 🚀ファイルはFileインスタンスです");
+            await uploadFileToFolder(folderPath, file);
+          } else {
+            console.log(" ❌ファイルがFileインスタンスではありません");
+          }
         } else {
           console.log(" ❌フォルダパスが無効です。");
         }

@@ -4,8 +4,11 @@ import { NextResponse } from "next/server";
 
 export const POST = async (req: NextRequest) => {
   try {
-    const contentType = req.headers.get("content-type") || "";
-
+    const contentType = req.headers.get("content-type");
+    if (!contentType) {
+      console.error("Content-Type header is missing");
+      throw new Error("Content-Type header is required");
+    }
     console.log("contentType:", contentType);
 
     // if (contentType.includes("multipart/form-data")) {

@@ -5,15 +5,12 @@ import { uploadFileToFolder } from "@/util/blob";
 export const POST = async (req: NextRequest) => {
   try {
     const contentType = req.headers.get("content-type") || "";
-    let file: FormDataEntryValue | null = null;
-    let folderPath: string | null = null;
-    let text = null;
 
     // ファイルアップロードの場合と、テキストデータアップロードの場合で処理を分岐
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
-      file = formData.get("file");
-      folderPath = formData.get("folderPath") as string;
+      const file = formData.get("file");
+      const folderPath = formData.get("folderPath") as string;
 
       // ファイルがアップロードされているか確認
       if (file && folderPath) {
@@ -37,7 +34,7 @@ export const POST = async (req: NextRequest) => {
       }
     } else if (contentType.includes("application/json")) {
       const json = await req.json();
-      text = json.text;
+      const text = json.text;
       console.log(" 🚀テキストデータを登録します。text: ", text);
     }
 

@@ -32,9 +32,6 @@
     "typescript": "5.4.5"
   },
   "engines": {
-    "node": "20.x"
-  },
-  "devDependencies": {
-    "eslint": "^9.17.0"
+    "node": "20.9.0"
   }
 }

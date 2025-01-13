@@ -137,6 +137,18 @@ def EventGridTrigger(azeventgrid: func.EventGridEvent):
                     blob_url=blob_url
                 )
 
+            elif file_extension == ".txt" or file_extension == ".md":
+
+                logging.info("🚀Triggerd blob file is Text.")
+                regist_context(
+                    azure_openai_service=azure_openai_service,
+                    cosmos_service=cosmos_service,
+                    file_name=file_name,
+                    file_path=blob_url,
+                    content=data_as_file.read().decode('utf-8'),
+                    BLOB_NAME=BLOB_TRIGGER_PATH
+                )
+
             else:
                 # 対応していない拡張子なので、ログにWarningで出力
                 logging.warning(

@@ -1,3 +1,4 @@
+from urllib.parse import urlparse
 import json
 import logging
 
@@ -21,19 +22,35 @@ STR_AI_SYSTEMMESSAGE = """
 
 # OpenAIで文章のキーワードを抽出する
 # output: カンマ区切りのキーワード群
+
+
 def get_keywords(aoai_service: AzureOpenAIService, file_content: str) -> str:
     # OpenAIに推論させるためのメッセージを作成
     messages = []
     messages.append({"role": "system", "content": STR_AI_SYSTEMMESSAGE})
     messages.append({"role": "user", "content": file_content})
-    
-    response_format={ "type": "json_object" },
-    
+
+    response_format = {"type": "json_object"},
+
     response = aoai_service.getChatCompletion(messages, 0, 0, response_format)
     response_message = response.choices[0].message.content
     logging.info(f"🚀Response Output: {response_message}")
-    
+
     # 回答をJSONに変換する
     output = json.loads(response_message)
-    
+
     return output["keywords"]
+
+
+def extract_keywords_from_file_path(file_path: str, blob_name: str) -> str:
+    """
+    BlobファイルのURLであるfile_pathからフォルダ名を取得し、フォルダ群をカンマ区切りでキーワードに設定。
+    URL部分とファイル拡張子を削除し、BLOB_NAMEをキーワードから削除する。
+    """
+    parsed_url = urlparse(file_path)
+    file_path = parsed_url.path.lstrip('/')
+    keywords = file_path.split("/")
+    keywords[-1] = keywords[-1].rsplit('.', 1)[0]  # ファイル拡張子を削除
+    keywords = [keyword for keyword in keywords if keyword != blob_name]
+    keywords = ",".join(keywords)
+    return keywords

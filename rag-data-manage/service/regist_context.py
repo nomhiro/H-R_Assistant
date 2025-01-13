@@ -13,22 +13,31 @@ from domain.obj_cosmos_page import CosmosPageObj
 from domain.document_structure import DocumentStructure
 from service.openai_service.openai_service import AzureOpenAIService
 from service.cosmos_service.cosmos_service import CosmosService
+from util.gen_keywords import extract_keywords_from_file_path
 
 
 def regist_context(azure_openai_service: AzureOpenAIService,
                    cosmos_service: CosmosService,
-                   title: str,
-                   context: str,):
+                   file_name: str,
+                   file_path: str,
+                   content: str,
+                   BLOB_NAME: str):
+
+    # ファイル名をタイトルとして、コンテンツをMarkdown形式に変換
+    content = '# ' + file_name + '\n\n' + content,
+
     # contentをベクトル値に変換
-    content_vector = azure_openai_service.getEmbedding(context)
+    content_vector = azure_openai_service.getEmbedding(content)
+
+    keywords = extract_keywords_from_file_path(file_path, BLOB_NAME)
 
     # CosmosDBに登録するアイテムのオブジェクト
-    cosmos_page_obj = CosmosPageObj(file_name=title,
-                                    file_path=None,
+    cosmos_page_obj = CosmosPageObj(file_name=file_name,
+                                    file_path=file_path,
                                     page_number=None,
-                                    content='# タイトル\n' + title + '\n' + context,
+                                    content=content,
                                     content_vector=content_vector,
-                                    keywords=None,
+                                    keywords=keywords,
                                     delete_flag=False,
                                     is_contain_image=False,
                                     image_blob_path=None)

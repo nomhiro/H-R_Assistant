@@ -8,6 +8,7 @@ export const POST = async (req: NextRequest) => {
     const aiMessage = await getInferenceRAG(message)
     return NextResponse.json({ aiMessage }, { status: 200 })
   } catch (error: any) {
-    return NextResponse.json({ aiMessage: error.message }, { status: 500 })
+    const statusCode = error.status || 500;
+    return NextResponse.json({ aiMessage: error.message }, { status: statusCode })
   }
 }

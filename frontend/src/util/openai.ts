@@ -1,60 +1,27 @@
 import { AzureOpenAI } from "openai";
 import { Query } from "../models/models"
 
-// export const getOnYourData = async (message: string): Promise<any[]> => {
-//   console.log('start', process.env.AZURE_OPENAI_ENDPOINT!);
-//   return new Promise(async (resolve, reject) => {
-//     const endpoint = process.env.AZURE_OPENAI_ENDPOINT!;
-//     const azureApiKey = process.env.AZURE_OPENAI_API_KEY!;
-//     const deploymentId = process.env.AZURE_OPENAI_DEPLOYMENT_ID!;
-//     const content = `
-//       ${message}
-//       `;
-//     try {
-//       const messages = [
-//         { role: 'system', content: 'You are a helpful assistant.' },
-//         {
-//           role: 'user',
-//           content,
-//         },
-//       ];
-//       const client = new OpenAIClient(
-//         endpoint,
-//         new AzureKeyCredential(azureApiKey)
-//       );
-
-//       const result = await client.getChatCompletions(deploymentId, messages);
-//       resolve(result.choices);
-//     } catch (error: any) {
-//       reject(error);
-//     }
-//   });
-// };
-
+const endpoint = process.env.AZURE_OPENAI_ENDPOINT!;
+const apiKey = process.env.AZURE_OPENAI_API_KEY!;
+const deployment_1 = process.env.AZURE_OPENAI_DEPLOYMENT_1!;
+const deployment_2 = process.env.AZURE_OPENAI_DEPLOYMENT_2!;
+const vectorDeployment = process.env.AZURE_OPENAI_VEC_DEPLOYMENT_ID!;
 const apiVersion = "2024-10-21";
 
 export const getChatCompletions = async (systemMessage: string, message: string, images: string[]): Promise<any[]> => {
   console.log('start', process.env.AZURE_OPENAI_ENDPOINT!);
   return new Promise(async (resolve, reject) => {
-    const endpoint = process.env.AZURE_OPENAI_ENDPOINT!;
-    const apiKey = process.env.AZURE_OPENAI_API_KEY!;
-    const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_ID!;
-    // const content = `
-    // ${message}
-    // `;
-
     const client = new AzureOpenAI({
       endpoint,
       apiKey,
-      deployment,
       apiVersion
     });
 
-    let messages;
-    // もし画像があれば、画像も含めてメッセージを作成
-    if (images.length > 0) {
-      try {
-        const response = await client.chat.completions.create({
+    const createCompletion = async (deployment: string) => {
+      let response;
+      // 画像がある場合の処理
+      if (images.length > 0) {
+        response = await client.chat.completions.create({
           messages: [
             { role: 'system', content: systemMessage },
             {
@@ -76,24 +43,37 @@ export const getChatCompletions = async (systemMessage: string, message: string,
           max_tokens: 4096,
           stream: false
         });
-        resolve(response.choices);
-      } catch (error: any) {
-        reject(error);
-      }
-    }
-    // 画像がない場合
-    else {
-      try {
-        const response = await client.chat.completions.create({
+      } else {
+        // 画像がない場合の処理
+        response = await client.chat.completions.create({
           messages: [
             { role: 'system', content: systemMessage },
             { role: 'user', content: message }
           ],
           model: deployment,
           stream: false
-        })
-        resolve(response.choices);
-      } catch (error: any) {
+        });
+      }
+      return response;
+    };
+
+    try {
+      // 最初のデプロイメントで推論
+      const response = await createCompletion(deployment_1);
+      resolve(response.choices);
+    } catch (error: any) {
+      if (error.statusCode === 429) {
+        console.error("  ❌レート制限エラーが発生しました。2番目のデプロイメントで推論します。");
+        try {
+          // レート制限エラーが発生した場合、2番目のデプロイメントで推論
+          const response = await createCompletion(deployment_2);
+          resolve(response.choices);
+        } catch (error: any) {
+          console.error("  ❌OpenAIへのリクエストエラー:", error);
+          reject(error);
+        }
+      } else {
+        console.error("  ❌OpenAIへのリクエストエラー:", error);
         reject(error);
       }
     }
@@ -104,32 +84,28 @@ export const getChatCompletions = async (systemMessage: string, message: string,
 // Azure OpenAIのembeddingモデルを使用し、ベクトル化を行う
 export const getEmbedding = async (message: string): Promise<number[]> => {
   return new Promise(async (resolve, reject) => {
-    const endpoint = process.env.AZURE_OPENAI_ENDPOINT!;
-    const apiKey = process.env.AZURE_OPENAI_API_KEY!;
-    const deployment = process.env.AZURE_OPENAI_VEC_DEPLOYMENT_ID!;
-
-    const client = new AzureOpenAI({
-      endpoint,
-      apiKey,
-      deployment,
-      apiVersion
-    });
-    const embeddings = await client.embeddings.create({ input: [message], model: deployment });
-
-    resolve(embeddings.data[0].embedding);
+    try {
+      const deployment = vectorDeployment;
+      const client = new AzureOpenAI({
+        endpoint,
+        apiKey,
+        deployment,
+        apiVersion
+      });
+      const embeddings = await client.embeddings.create({ input: [message], model: deployment });
+      resolve(embeddings.data[0].embedding);
+    } catch (error) {
+      console.error("  ❌ベクトル化エラー:", error);
+      reject(error);
+    }
   });
 };
 
 export const getQueryJson = async (input: string): Promise<Query> => {
-  return new Promise(async (resolve, reject) => {
+  const createQueryJson = async (deployment: string): Promise<Query> => {
     console.log(` 🚀ユーザメッセージから検索クエリ生成開始: ${input}`)
 
-    try {
-      const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
-      const apiKey = process.env.AZURE_OPENAI_API_KEY!;
-      const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_ID!;
-
-      const systemMessage = `ユーザ入力の文章を、重要なKeywordと、それに基づいた検索用文章に変換してください。
+    const systemMessage = `ユーザ入力の文章を、重要なKeywordと、それに基づいた検索用文章に変換してください。
 
 # Steps
 
@@ -173,68 +149,85 @@ export const getQueryJson = async (input: string): Promise<Query> => {
 - **検索用文章**は、キーワードを自然な形で含む具体的で簡潔な文章にしてください。
 - 不要な補助語や曖昧な表現は避けてください。`
 
-      const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
-      console.log("    url:", url);
+    const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
+    console.log("    url:", url);
 
-      const headers = {
-        "api-key": apiKey,
-        "Content-Type": "application/json"
-      };
+    const headers = {
+      "api-key": apiKey,
+      "Content-Type": "application/json"
+    };
 
-      const body = {
-        messages: [
-          { role: "system", content: systemMessage },
-          { role: "user", content: input }
-        ],
-        temperature: 0.0,
-        top_p: 0.0,
-        max_tokens: 1024,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "Minutes",
-            strict: true,
-            schema: {
-              type: "object",
-              properties: {
-                keywords: {
-                  type: "array",
-                  items: {
-                    type: "string"
-                  }
-                },
-                search_text: {
+    const body = {
+      messages: [
+        { role: "system", content: systemMessage },
+        { role: "user", content: input }
+      ],
+      temperature: 0.0,
+      top_p: 0.0,
+      max_tokens: 1024,
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "Minutes",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              keywords: {
+                type: "array",
+                items: {
                   type: "string"
                 }
               },
-              required: [
-                "keywords",
-                "search_text"
-              ],
-              additionalProperties: false
-            }
+              search_text: {
+                type: "string"
+              }
+            },
+            required: [
+              "keywords",
+              "search_text"
+            ],
+            additionalProperties: false
           }
         }
-      };
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(body)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status} message: ${response.statusText}`);
       }
+    };
 
-      const responseData = await response.json();
-      const query: Query = JSON.parse(responseData.choices[0].message.content);
-      console.log("  🚀query:", query)
+    const response = await fetch(url, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(body)
+    });
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status} message: ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    const query: Query = JSON.parse(responseData.choices[0].message.content);
+    console.log("  🚀query:", query)
+
+    return query;
+  };
+
+  return new Promise(async (resolve, reject) => {
+    try {
+      const query = await createQueryJson(deployment_1);
       resolve(query);
-    } catch (error) {
-      console.error("  ❌ユーザメッセージから検索クエリ生成エラー:", error);
-      reject(error);
+    } catch (error: any) {
+      if (error.statusCode === 429) {
+        try {
+          console.error("  ❌レート制限エラーが発生しました。2番目のデプロイメントで推論します。");
+          const query = await createQueryJson(deployment_2);
+          resolve(query);
+        } catch (error: any) {
+          console.error("  ❌ユーザメッセージから検索クエリ生成エラー:", error);
+          reject(error);
+        }
+      } else {
+        console.error("  ❌ユーザメッセージから検索クエリ生成エラー:", error);
+        reject(error);
+      }
     }
   });
 };

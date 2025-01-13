@@ -134,7 +134,7 @@ export const getQueryJson = async (input: string): Promise<Query> => {
 # Steps
 
 1. ユーザメッセージを解析し、重要なキーワードを抽出する。
-2. 抽出したキーワードを基に、簡潔かつ適切な検索用文章を作成する。
+2. 抽出したキーワードを基に、簡潔な検索用文章を作成する。
 3. キーワードと検索用文章をJSON形式で出力する。
 
 # Output Format
@@ -149,7 +149,7 @@ export const getQueryJson = async (input: string): Promise<Query> => {
 
 ### Example 1:
 **Input**
-こんにちは！東京でおすすめのイタリアンレストランを教えてください。
+こんにちは！東京で最もおすすめのイタリアンレストランを教えてください。
 
 **Output**
 {
@@ -163,8 +163,8 @@ export const getQueryJson = async (input: string): Promise<Query> => {
 
 **Output**
 {
-  "keywords": ["AI技術", "進化", "最近"],
-  "search_text": "最近のAI技術の進化に関する情報"
+  "keywords": ["AI技術", "進化"],
+  "search_text": "AI技術の進化に関する情報"
 }
 
 # Notes

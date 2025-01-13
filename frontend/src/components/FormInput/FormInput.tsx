@@ -19,7 +19,7 @@ const FormInput = () => {
       isMan: true
     }))
 
-    const url = '/api/onyourdata'
+    const url = '/api/inference'
     const response = await fetch(`${url}`, {
       method: 'POST',
       headers: {

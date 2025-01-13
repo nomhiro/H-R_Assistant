@@ -4,11 +4,11 @@ import { getBase64File } from './blob';
 import { Query } from '../models/models';
 import { CosmosItem } from "../models/models";
 
-let VECTOR_SCORE = parseFloat(process.env.VECTOR_SCORE!);
-
 export const getInferenceRAG = async (message: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
+      let VECTOR_SCORE = parseFloat(process.env.VECTOR_SCORE!);
+
       // ユーザメッセージを、Keywordと検索用文章に変換
       console.log('🚀Convert message to keyword and search sentence.');
       const query: Query = await getQueryJson(message);

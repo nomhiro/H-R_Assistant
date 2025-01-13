@@ -122,7 +122,7 @@ export const getEmbedding = async (message: string): Promise<number[]> => {
 
 export const getQueryJson = async (input: string): Promise<Query> => {
   return new Promise(async (resolve, reject) => {
-    console.log(" 🚀ユーザメッセージから検索クエリ生成開始");
+    console.log(` 🚀ユーザメッセージから検索クエリ生成開始: ${input}`)
 
     try {
       const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
@@ -188,7 +188,7 @@ export const getQueryJson = async (input: string): Promise<Query> => {
         ],
         temperature: 0.0,
         top_p: 0.0,
-        max_tokens: 16384,
+        max_tokens: 1024,
         response_format: {
           type: "json_schema",
           json_schema: {
@@ -224,7 +224,7 @@ export const getQueryJson = async (input: string): Promise<Query> => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status} message: ${response.statusText}`);
       }
 
       const responseData = await response.json();

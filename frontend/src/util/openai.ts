@@ -1,5 +1,6 @@
 import { AzureOpenAI } from "openai";
 import { Query } from "../models/models"
+import { APIMessagesType } from "@/types/types";
 
 const endpoint = process.env.AZURE_OPENAI_ENDPOINT!;
 const apiKey = process.env.AZURE_OPENAI_API_KEY!;
@@ -8,7 +9,7 @@ const deployment_2 = process.env.AZURE_OPENAI_DEPLOYMENT_2!;
 const vectorDeployment = process.env.AZURE_OPENAI_VEC_DEPLOYMENT_ID!;
 const apiVersion = "2024-10-21";
 
-export const getChatCompletions = async (systemMessage: string, message: string, images: string[]): Promise<any[]> => {
+export const getChatCompletions = async (system_message: string, message: string, messages?: APIMessagesType[], images?: string[]): Promise<any[]> => {
   console.log('start', process.env.AZURE_OPENAI_ENDPOINT!);
   return new Promise(async (resolve, reject) => {
     const client = new AzureOpenAI({
@@ -19,24 +20,26 @@ export const getChatCompletions = async (systemMessage: string, message: string,
 
     const createCompletion = async (deployment: string) => {
       let response;
-      // 画像がある場合の処理
-      if (images.length > 0) {
+      if ((images ?? []).length > 0) {
         response = await client.chat.completions.create({
           messages: [
-            { role: 'system', content: systemMessage },
+            ...(messages ?? []),
             {
-              role: 'user', content: [
+              role: 'system', content: system_message
+            },
+            {
+              role: 'user', content: JSON.stringify([
                 {
                   type: "text",
                   text: message
                 },
-                {
+                ...(images ?? []).map(image => ({
                   type: "image_url",
                   image_url: {
-                    url: `data:image/jpeg;base64,${images[0]}`
+                    url: `data:image/jpeg;base64,${image}`
                   }
-                }
-              ]
+                }))
+              ])
             }
           ],
           model: deployment,
@@ -44,13 +47,18 @@ export const getChatCompletions = async (systemMessage: string, message: string,
           stream: false
         });
       } else {
-        // 画像がない場合の処理
         response = await client.chat.completions.create({
           messages: [
-            { role: 'system', content: systemMessage },
-            { role: 'user', content: message }
+            ...(messages ?? []),
+            {
+              role: 'system', content: system_message
+            },
+            {
+              role: 'user', content: message
+            }
           ],
           model: deployment,
+          max_tokens: 4096,
           stream: false
         });
       }
@@ -58,14 +66,12 @@ export const getChatCompletions = async (systemMessage: string, message: string,
     };
 
     try {
-      // 最初のデプロイメントで推論
       const response = await createCompletion(deployment_1);
       resolve(response.choices);
     } catch (error: any) {
       if (error.statusCode === 429) {
         console.error("  ❌レート制限エラーが発生しました。2番目のデプロイメントで推論します。");
         try {
-          // レート制限エラーが発生した場合、2番目のデプロイメントで推論
           const response = await createCompletion(deployment_2);
           resolve(response.choices);
         } catch (error: any) {

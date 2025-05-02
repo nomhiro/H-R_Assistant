@@ -1,23 +1,19 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../store/store';
-import { MessageType } from '../types/types';
+import { MessageType, InitialStateType } from '../types/types';
 
-type InitialStateType = {
-  onyourdata: MessageType[];
-}
-
-const initialState: InitialStateType = {
-  onyourdata: []
-}
+const initialState: InitialStateType = {};
 
 export const messageSlice = createSlice({
   name: 'message',
   initialState,
   reducers: {
     inputMessageToReduxStore: (state, action) => {
-      if (action.payload.pathname === '/') {
-        state.onyourdata.push(action.payload)
+      const { pathname, ...messageData } = action.payload;
+      if (!state[pathname]) {
+        state[pathname] = [];
       }
+      state[pathname].push(messageData);
     }
   }
 })

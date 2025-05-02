@@ -4,8 +4,8 @@ import { getInferenceRAG } from "@/util/generate";
 
 export const POST = async (req: NextRequest) => {
   try {
-    const { message } = await req.json()
-    const aiMessage = await getInferenceRAG(message)
+    const { messages, message } = await req.json()
+    const aiMessage = await getInferenceRAG(messages, message)
     return NextResponse.json({ aiMessage }, { status: 200 })
   } catch (error: any) {
     const statusCode = error.status || 500;

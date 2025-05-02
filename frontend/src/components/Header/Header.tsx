@@ -1,16 +1,25 @@
-import React from 'react'
-import { IoEarth } from 'react-icons/io5'
+import React from 'react';
+import { IoHome } from 'react-icons/io5';
+import { MdFolder } from 'react-icons/md';
+import Link from 'next/link';
 
 const Header = () => {
   return (
-    // 画面上部のHeaderメニュー。H&R Assistantと表示する
     <header className='bg-slate-900 text-white text-lg flex items-center justify-between px-4'>
       <div className='flex items-center'>
-        <IoEarth className='text-2xl' />
-        <span className='ml-2'>H&R Assistant</span>
+        <Link href="/" className="flex items-center">
+          <IoHome className='text-2xl' />
+          <span className='ml-2 hover:underline'>AIアシスタント</span>
+        </Link>
+      </div>
+      <div className='flex space-x-4'>
+        <Link href="/documents" className="flex items-center text-sm hover:underline">
+          <MdFolder className="mr-1" />
+          ドキュメント管理
+        </Link>
       </div>
     </header>
-  )
-}
+  );
+};
 
 export default Header;

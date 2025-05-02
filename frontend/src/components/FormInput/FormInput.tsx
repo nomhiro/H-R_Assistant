@@ -2,11 +2,13 @@
 
 import { usePathname } from "next/navigation"
 import { useState } from "react"
-import { inputMessageToReduxStore } from "@/features/messageSlice"
-import { useAppDispatch } from "@/hooks/useRTK"
+import { inputMessageToReduxStore, selectMessage } from "@/features/messageSlice"
+import { useAppDispatch, useAppSelector } from "@/hooks/useRTK"
+import { InitialStateType } from "@/types/types"
 
 const FormInput = () => {
   const dispatch = useAppDispatch()
+  const messages: InitialStateType = useAppSelector(selectMessage)
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const pathname = usePathname()
@@ -19,13 +21,19 @@ const FormInput = () => {
       isMan: true
     }))
 
+    const chatHistory = messages[pathname] || []
+    const formattedMessages = chatHistory.map((chat) => ({
+      role: chat.isMan ? "user" : "assistant",
+      content: chat.message
+    }))
+
     const url = '/api/inference'
     const response = await fetch(`${url}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ messages: formattedMessages, message })
     })
 
     const { aiMessage } = await response.json()

@@ -1,10 +1,11 @@
 import { getEmbedding, getChatCompletions, getQueryJson } from './openai';
-import { getItemsByVector } from './cosmos';
+import { getItemsByVector } from './cosmos/document';
 import { getBase64File } from './blob';
 import { Query } from '../models/models';
-import { CosmosItem } from "../models/models";
+import { CosmosInferenceItem } from "../models/models";
+import { APIMessagesType } from "@/types/types";
 
-export const getInferenceRAG = async (message: string): Promise<string> => {
+export const getInferenceRAG = async (messages: APIMessagesType[], message: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
       let VECTOR_SCORE = parseFloat(process.env.VECTOR_SCORE!);
@@ -17,34 +18,34 @@ export const getInferenceRAG = async (message: string): Promise<string> => {
       console.log('🚀Get embedding from Azure OpenAI.');
       const embeddedMessage = await getEmbedding(query.search_text);
 
-      let cosmosItems: CosmosItem[] = [];
+      let CosmosInferenceItems: CosmosInferenceItem[] = [];
       let attempts = 0;
 
-      while (cosmosItems.length === 0 && attempts < 3) {
+      while (CosmosInferenceItems.length === 0 && attempts < 3) {
         // CosmosDBでベクトル検索
         console.log(`🚀Search vector from Azure CosmosDB with VECTOR_SCORE: ${VECTOR_SCORE}.`);
-        cosmosItems = await getItemsByVector(embeddedMessage, VECTOR_SCORE.toString());
+        CosmosInferenceItems = await getItemsByVector(embeddedMessage, VECTOR_SCORE.toString());
 
-        if (cosmosItems.length === 0) {
+        if (CosmosInferenceItems.length === 0) {
           VECTOR_SCORE -= 0.03;
           attempts++;
           console.log(`🚀No items found. Retrying with VECTOR_SCORE: ${VECTOR_SCORE}. Attempt: ${attempts}`);
         }
       }
 
-      if (cosmosItems.length === 0) {
+      if (CosmosInferenceItems.length === 0) {
         console.log('🚀No items found after 3 attempts.');
       }
 
       // systemMessageにRAGの情報を追加
       console.log('🚀Create system message and image_content.');
-      let systemMessage = 'あなたが持っている知識は使ってはいけません。 "検索結果" と画像の情報のみを使い回答しなさい。わからない場合は「分かりません。」と回答しなさい。';
+      let systemMessage = 'あなたは親切なアシスタントです。過去のチャット履歴と"検索結果" と画像の情報を使い回答しなさい。';
       systemMessage += '# 検索結果\n'
       let images: string[] = [];
       let responseImageUrl: string = "";
-      for (const result of cosmosItems) {
+      for (const result of CosmosInferenceItems) {
         // ループ番号を追加
-        systemMessage += '## ' + (cosmosItems.indexOf(result) + 1) + '\n' + result.content + '\n\n';;
+        systemMessage += '## ' + (CosmosInferenceItems.indexOf(result) + 1) + '\n' + result.content + '\n\n';;
         // 画像の取得
         if (result.is_contain_image === true) {
           const image = await getBase64File(result.image_blob_path);
@@ -55,14 +56,14 @@ export const getInferenceRAG = async (message: string): Promise<string> => {
       }
 
       // OpenAI へのリクエスト
-      const result = await getChatCompletions(systemMessage, message, images);
+      const result = await getChatCompletions(systemMessage, message, messages, images);
       let aiMessage = result[0].message.content;
       // 検索結果(cosmosItem)があればaiMessageと改行でつなぐ。スコアもつける
       let displaySearchedDoc = '';
-      if (cosmosItems.length > 0) {
+      if (CosmosInferenceItems.length > 0) {
         displaySearchedDoc = '---\n### 検索結果\n';
-        for (const item of cosmosItems) {
-          displaySearchedDoc += (cosmosItems.indexOf(item) + 1) + '. ' + item.file_name + ' : ' + item.SimilarityScore + '\n';
+        for (const item of CosmosInferenceItems) {
+          displaySearchedDoc += (CosmosInferenceItems.indexOf(item) + 1) + '. ' + item.file_name + ' : ' + item.SimilarityScore + '\n';
         }
       }
 

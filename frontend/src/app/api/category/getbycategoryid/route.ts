@@ -9,7 +9,7 @@ import { getCosmosItemsByCategoryId } from "../../../../util/cosmos/document";
  */
 export const GET = async (req: NextRequest) => {
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = req.nextUrl; // 修正: req.url から req.nextUrl に変更
     const categoryId = searchParams.get("categoryId");
 
     if (!categoryId || typeof categoryId !== "string") {

@@ -23,6 +23,33 @@ export const getAllCategories = async (): Promise<CategoryItem[]> => {
 };
 
 /**
+ * categoryをIDで取得する
+ * @param id - カテゴリのID
+ * @returns - カテゴリ情報
+ */
+export const getCategoryById = async (id: string): Promise<CategoryItem | null> => {
+  return new Promise(async (resolve, reject) => {
+    const cosmosClient = new CosmosClient(process.env.COSMOS_CONNECTION_STRING!);
+    const database = cosmosClient.database(process.env.COSMOS_DATABASE_NAME!);
+    const container = database.container(process.env.COSMOS_CATEGORY_CONTAINER_NAME!);
+
+    try {
+      const { resource } = await container.item(id, id).read<CategoryItem>();
+      console.log("🚀Category retrieved successfully.");
+      resolve(resource || null); // カテゴリが見つからない場合はnullを返す
+    } catch (error) {
+      if ((error as any).code === 404) {
+        console.log("🚀Category not found.");
+        resolve(null);
+      } else {
+        console.error("🚀Error retrieving category:", error);
+        reject(error);
+      }
+    }
+  });
+}
+
+/**
  * categoryを登録する
  * @param category - 登録するカテゴリ
  * @returns

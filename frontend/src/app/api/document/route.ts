@@ -3,6 +3,7 @@ import { registerItem } from "../../../util/cosmos/document";
 import { getEmbedding, getChatCompletions } from "../../../util/openai";
 import { v4 as uuidv4 } from "uuid";
 import { deleteItem } from "../../../util/cosmos/document"; // 修正: deleteItemをインポート
+import { getCategoryById } from "../../../util/cosmos/category"
 
 /**
  * POSTメソッドで新しいアイテムを登録するAPIエンドポイント
@@ -19,8 +20,13 @@ export const POST = async (req: NextRequest) => {
       return NextResponse.json({ message: "Invalid input" }, { status: 400 });
     }
 
+    console.log("🚀Registering item with category ID:", category_id, "and content:", content);
+
+    // カテゴリIDからカテゴリ情報を取得
+    const category = await getCategoryById(category_id);
+
     // OpenAIのAPIを使用してコンテンツのベクトルを取得
-    const contentVector = await getEmbedding(content);
+    const contentVector = await getEmbedding(`${category?.category} \n${content}`);
 
     // OpenAIのAPIを使用してドキュメントタイトルを取得
     const systemMessage = `あなたは優秀なライターです。与えられた内容からタイトルを生成してください。\n\n- タイトルのみを出力してください。「」など不要です。`;

@@ -1,6 +1,7 @@
 import { CosmosClient } from "@azure/cosmos";
 import { AccountItem } from "../../models/models";
-
+import dotenv from "dotenv";
+dotenv.config();
 /**
  * categoryを全取得する
  * @returns - カテゴリの配列

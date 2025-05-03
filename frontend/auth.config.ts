@@ -4,6 +4,10 @@ import { getAllAccounts } from "./src/util/cosmos/account";
 
 let allowedEmails: string[] = [];
 
+/**
+ * 許可されたメールアドレスを取得する関数
+ * @returns {Promise<string[]>} - 許可されたメールアドレスの配列
+ */
 async function fetchAllowedEmails() {
   try {
     allowedEmails = await getAllAccounts()

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 interface CategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (categoryName: string) => void;
+  onSubmit: (categoryName: string) => Promise<void>;
   initialCategory?: string;
 }
 
@@ -14,6 +14,7 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
   initialCategory = "",
 }) => {
   const [categoryName, setCategoryName] = useState(initialCategory);
+  const [isSubmitting, setIsSubmitting] = useState(false); // 処理中状態を管理
 
   useEffect(() => {
     if (isOpen) {
@@ -21,13 +22,21 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
     }
   }, [isOpen, initialCategory]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!categoryName.trim()) {
       alert("カテゴリ名を入力してください。");
       return;
     }
-    onSubmit(categoryName);
-    setCategoryName("");
+
+    setIsSubmitting(true); // ボタンを非活性にする
+    try {
+      await onSubmit(categoryName);
+      setCategoryName("");
+    } catch (error) {
+      console.error("エラー:", error);
+    } finally {
+      setIsSubmitting(false); // 処理終了後にボタンを有効化
+    }
   };
 
   if (!isOpen) return null;
@@ -52,9 +61,31 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+            disabled={isSubmitting}
           >
-            保存
+            {isSubmitting ? (
+              <svg
+                className="animate-spin h-5 w-5 text-white mr-2"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            ) : "保存"}
           </button>
         </div>
       </div>

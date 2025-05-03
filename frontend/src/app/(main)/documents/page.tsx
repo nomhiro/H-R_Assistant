@@ -135,7 +135,7 @@ export default function DocumentsPage() {
               value={selectedCategory} // ドロップダウンの選択状態をバインド
             />
           </Suspense>
-          {selectedCategory && (
+          {selectedCategory ? (
             <div className="flex items-center space-x-2">
               <button
                 className="bg-yellow-500 text-white p-2 rounded-full"
@@ -148,22 +148,22 @@ export default function DocumentsPage() {
                 <FaEdit />
               </button>
               <button
-                className="bg-blue-500 text-white p-2 rounded-full"
-                onClick={() => {
-                  setEditingCategory(null);
-                  setIsCategoryModalOpen(true);
-                }}
-              >
-                <FaPlus />
-              </button>
-              <button
                 className="bg-red-500 text-white p-2 rounded-full"
                 onClick={() => handleDeleteCategory(selectedCategory)}
               >
                 <FaTrash />
               </button>
             </div>
-          )}
+          ) : null}
+          <button
+            className="bg-blue-500 text-white p-2 rounded-full"
+            onClick={() => {
+              setEditingCategory(null);
+              setIsCategoryModalOpen(true);
+            }}
+          >
+            <FaPlus />
+          </button>
         </div>
         {selectedCategory && (
           <div className="flex flex-col md:flex-row flex-1">
@@ -171,6 +171,7 @@ export default function DocumentsPage() {
               text={text}
               setText={setText}
               isSubmitting={isSubmitting}
+              setIsSubmitting={setIsSubmitting} // setIsSubmittingを追加
               onSubmit={async () => {
                 if (!text.trim()) {
                   alert("テキストを入力してください。");

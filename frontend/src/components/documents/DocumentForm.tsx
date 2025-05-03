@@ -4,12 +4,14 @@ export default function DocumentForm({
   text,
   setText,
   isSubmitting,
+  setIsSubmitting,
   onSubmit,
   editingDocument,
 }: {
   text: string;
   setText: (value: string) => void;
   isSubmitting: boolean;
+  setIsSubmitting: (value: boolean) => void;
   onSubmit: () => void;
   editingDocument: CosmosItem | null;
 }) {
@@ -19,20 +21,27 @@ export default function DocumentForm({
       return;
     }
 
-    if (editingDocument) {
-      // ドキュメントを更新
-      await fetch(`/api/document`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: editingDocument.id,
-          category_id: editingDocument.category_id, // 必要なカテゴリIDを含める
-          content: text,
-        }),
-      });
-    } else {
-      // 新規ドキュメントを登録
-      onSubmit();
+    setIsSubmitting(true); // ボタンを非活性にする
+    try {
+      if (editingDocument) {
+        // ドキュメントを更新
+        await fetch(`/api/document`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: editingDocument.id,
+            category_id: editingDocument.category_id, // 必要なカテゴリIDを含める
+            content: text,
+          }),
+        });
+      } else {
+        // 新規ドキュメントを登録
+        await onSubmit();
+      }
+    } catch (error) {
+      console.error("エラー:", error);
+    } finally {
+      setIsSubmitting(false); // 処理終了後にボタンを有効化
     }
   };
 
@@ -49,8 +58,7 @@ export default function DocumentForm({
         onChange={(e) => setText(e.target.value)}
       />
       <button
-        className={`bg-blue-500 text-white px-4 py-2 mt-2 flex items-center justify-center ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+        className={`bg-blue-500 text-white px-4 py-2 mt-2 flex items-center justify-center ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
         onClick={handleSubmit}
         disabled={isSubmitting}
       >
@@ -76,7 +84,7 @@ export default function DocumentForm({
             ></path>
           </svg>
         ) : null}
-        {editingDocument ? "更新" : "登録"}
+        {isSubmitting ? "処理中..." : editingDocument ? "更新" : "登録"}
       </button>
     </div>
   );

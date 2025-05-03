@@ -20,6 +20,7 @@
     "axios": "^1.7.2",
     "framer-motion": "^11.1.9",
     "next": "^14.2.23",
+    "next-auth": "^5.0.0-beta.27",
     "openai": "^4.77.0",
     "postcss": "8.4.38",
     "react": "18.3.1",

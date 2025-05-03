@@ -13,6 +13,29 @@ export default function DocumentForm({
   onSubmit: () => void;
   editingDocument: CosmosItem | null;
 }) {
+  const handleSubmit = async () => {
+    if (!text.trim()) {
+      alert("テキストを入力してください。");
+      return;
+    }
+
+    if (editingDocument) {
+      // ドキュメントを更新
+      await fetch(`/api/document`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingDocument.id,
+          category_id: editingDocument.category_id, // 必要なカテゴリIDを含める
+          content: text,
+        }),
+      });
+    } else {
+      // 新規ドキュメントを登録
+      onSubmit();
+    }
+  };
+
   return (
     <div className="w-full md:w-1/2 p-4">
       <h2 className="text-lg font-bold">
@@ -28,7 +51,7 @@ export default function DocumentForm({
       <button
         className={`bg-blue-500 text-white px-4 py-2 mt-2 flex items-center justify-center ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
           }`}
-        onClick={onSubmit}
+        onClick={handleSubmit}
         disabled={isSubmitting}
       >
         {isSubmitting ? (

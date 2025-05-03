@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface CategoryModalProps {
   isOpen: boolean;
@@ -14,6 +14,12 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
   initialCategory = "",
 }) => {
   const [categoryName, setCategoryName] = useState(initialCategory);
+
+  useEffect(() => {
+    if (isOpen) {
+      setCategoryName(initialCategory || "");
+    }
+  }, [isOpen, initialCategory]);
 
   const handleSubmit = () => {
     if (!categoryName.trim()) {

@@ -13,6 +13,10 @@ const FormInput = () => {
   const [isLoading, setIsLoading] = useState(false)
   const pathname = usePathname()
 
+  const clearChat = () => {
+    dispatch(inputMessageToReduxStore({ pathname, clear: true }))
+  }
+
   const sendMessage = async () => {
     setIsLoading(true)
     dispatch(inputMessageToReduxStore({
@@ -54,6 +58,20 @@ const FormInput = () => {
         Your Message
       </label>
       <div className="flex items-center px-3 py-2 rounded-lg bg-gray-50">
+        <button
+          onClick={clearChat}
+          className="inline-flex justify-center p-2 text-red-600 rounded-full cursor-pointer hover:bg-red-100"
+        >
+          <svg
+            className="w-5 h-5"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M3 6h18v2H3V6zm2 3h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9zm5 2v8h2v-8H8zm4 0v8h2v-8h-2z" />
+          </svg>
+          <span className="sr-only">Clear Chat</span>
+        </button>
         <textarea
           id="chat"
           rows={3}
@@ -83,7 +101,6 @@ const FormInput = () => {
               </div>
             )
           }
-
           <span className="sr-only">Send Message</span>
         </button>
       </div>

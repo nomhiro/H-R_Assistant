@@ -9,11 +9,15 @@ export const messageSlice = createSlice({
   initialState,
   reducers: {
     inputMessageToReduxStore: (state, action) => {
-      const { pathname, ...messageData } = action.payload;
-      if (!state[pathname]) {
-        state[pathname] = [];
+      const { pathname, clear, ...messageData } = action.payload;
+      if (clear) {
+        state[pathname] = []; // チャットをクリア
+      } else {
+        if (!state[pathname]) {
+          state[pathname] = [];
+        }
+        state[pathname].push(messageData);
       }
-      state[pathname].push(messageData);
     }
   }
 })

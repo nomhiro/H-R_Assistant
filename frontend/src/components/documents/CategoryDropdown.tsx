@@ -30,13 +30,6 @@ export default function CategoryDropdown({
           </option>
         ))}
       </select>
-      <button
-        className="bg-blue-500 text-white p-2 rounded-full"
-        onClick={onAddCategory}
-        aria-label="カテゴリを追加"
-      >
-        <FaPlus />
-      </button>
     </div>
   );
 }

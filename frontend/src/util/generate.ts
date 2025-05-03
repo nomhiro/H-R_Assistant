@@ -1,5 +1,6 @@
 import { getEmbedding, getChatCompletions, getQueryJson } from './openai';
 import { getItemsByVector } from './cosmos/document';
+import { getCategoryById } from './cosmos/category';
 import { getBase64File } from './blob';
 import { Query } from '../models/models';
 import { CosmosInferenceItem } from "../models/models";
@@ -21,31 +22,38 @@ export const getInferenceRAG = async (messages: APIMessagesType[], message: stri
       let CosmosInferenceItems: CosmosInferenceItem[] = [];
       let attempts = 0;
 
-      while (CosmosInferenceItems.length === 0 && attempts < 3) {
+      while (CosmosInferenceItems.length === 0 && attempts < 5) {
         // CosmosDBでベクトル検索
         console.log(`🚀Search vector from Azure CosmosDB with VECTOR_SCORE: ${VECTOR_SCORE}.`);
         CosmosInferenceItems = await getItemsByVector(embeddedMessage, VECTOR_SCORE.toString());
 
         if (CosmosInferenceItems.length === 0) {
-          VECTOR_SCORE -= 0.03;
+          VECTOR_SCORE -= 0.02;
           attempts++;
           console.log(`🚀No items found. Retrying with VECTOR_SCORE: ${VECTOR_SCORE}. Attempt: ${attempts}`);
         }
       }
 
       if (CosmosInferenceItems.length === 0) {
-        console.log('🚀No items found after 3 attempts.');
+        console.log('🚀No items found after 5 attempts.');
       }
 
       // systemMessageにRAGの情報を追加
       console.log('🚀Create system message and image_content.');
-      let systemMessage = 'あなたは親切なアシスタントです。過去のチャット履歴と"検索結果" と画像の情報を使い回答しなさい。';
-      systemMessage += '# 検索結果\n'
+      let systemMessage = 'あなたは親切なアシスタントです。過去のチャット履歴と"検索結果" と画像の情報を使い回答しなさい。検索結果がある場合は、検索結果の内容を軸に回答してください。';
+      systemMessage += '\n\n-------- 検索結果 --------\n'
       let images: string[] = [];
       let responseImageUrl: string = "";
       for (const result of CosmosInferenceItems) {
+        // category_idフィールドが存在する場合は、カテゴリ名を取得
+        let categoryName = '';
+        if (result.category_id) {
+          const category = await getCategoryById(result.category_id);
+          categoryName = category?.category || '';
+        }
+
         // ループ番号を追加
-        systemMessage += '## ' + (CosmosInferenceItems.indexOf(result) + 1) + '\n' + result.content + '\n\n';;
+        systemMessage += '# ' + (CosmosInferenceItems.indexOf(result) + 1) + " " + categoryName + " " + result.file_name + '\n' + result.content + '\n\n';;
         // 画像の取得
         if (result.is_contain_image === true) {
           const image = await getBase64File(result.image_blob_path);
@@ -54,6 +62,8 @@ export const getInferenceRAG = async (messages: APIMessagesType[], message: stri
           responseImageUrl += result.image_blob_path + ': ' + result.SimilarityScore + '  \n';
         }
       }
+
+      console.log(`🚀System message created: ${systemMessage}`);
 
       // OpenAI へのリクエスト
       const result = await getChatCompletions(systemMessage, message, messages, images);

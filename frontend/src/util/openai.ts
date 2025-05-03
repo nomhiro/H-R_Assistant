@@ -10,7 +10,6 @@ const vectorDeployment = process.env.AZURE_OPENAI_VEC_DEPLOYMENT_ID!;
 const apiVersion = "2024-10-21";
 
 export const getChatCompletions = async (system_message: string, message: string, messages?: APIMessagesType[], images?: string[]): Promise<any[]> => {
-  console.log('start', process.env.AZURE_OPENAI_ENDPOINT!);
   return new Promise(async (resolve, reject) => {
     const client = new AzureOpenAI({
       endpoint,
@@ -33,10 +32,10 @@ export const getChatCompletions = async (system_message: string, message: string
                   type: "text",
                   text: message
                 },
-                ...(images ?? []).map(image => ({
+                ...(images ?? []).map(imageUrl => ({
                   type: "image_url",
                   image_url: {
-                    url: `data:image/jpeg;base64,${image}`
+                    url: imageUrl
                   }
                 }))
               ])
@@ -66,6 +65,12 @@ export const getChatCompletions = async (system_message: string, message: string
     };
 
     try {
+      console.log("  🚀Azure OpenAIへのリクエスト開始:", deployment_2);
+      console.log("    system_message:", system_message);
+      console.log("    message:", message);
+      console.log("    messages:", messages);
+      // 画像の数
+      console.log("    images:", images?.length ?? 0);
       const response = await createCompletion(deployment_2);
       resolve(response.choices);
     } catch (error: any) {

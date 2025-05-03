@@ -1,7 +1,7 @@
 import { getEmbedding, getChatCompletions, getQueryJson } from './openai';
 import { getItemsByVector } from './cosmos/document';
 import { getCategoryById } from './cosmos/category';
-import { getBase64File } from './blob';
+import { getBlobUrl } from './blob';
 import { Query } from '../models/models';
 import { CosmosInferenceItem } from "../models/models";
 import { APIMessagesType } from "@/types/types";
@@ -56,8 +56,8 @@ export const getInferenceRAG = async (messages: APIMessagesType[], message: stri
         systemMessage += '# ' + (CosmosInferenceItems.indexOf(result) + 1) + " " + categoryName + " " + result.file_name + '\n' + result.content + '\n\n';;
         // 画像の取得
         if (result.is_contain_image === true) {
-          const image = await getBase64File(result.image_blob_path);
-          images.push(image);
+          const imageUrl = await getBlobUrl(result.image_blob_path);
+          images.push(imageUrl);
 
           responseImageUrl += result.image_blob_path + ': ' + result.SimilarityScore + '  \n';
         }

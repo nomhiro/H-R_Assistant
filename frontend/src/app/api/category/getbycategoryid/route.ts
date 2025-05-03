@@ -9,8 +9,8 @@ import { getCosmosItemsByCategoryId } from "../../../../util/cosmos/document";
  */
 export const GET = async (req: NextRequest) => {
   try {
-    const { searchParams } = req.nextUrl; // 修正: req.url から req.nextUrl に変更
-    const categoryId = searchParams.get("categoryId");
+    const url = new URL(req.url); // 修正: URLコンストラクタを使用
+    const categoryId = url.searchParams.get("categoryId");
 
     if (!categoryId || typeof categoryId !== "string") {
       return NextResponse.json({ message: "Invalid category ID" }, { status: 400 });

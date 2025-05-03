@@ -66,10 +66,10 @@ export const getChatCompletions = async (system_message: string, message: string
     };
 
     try {
-      const response = await createCompletion(deployment_1);
+      const response = await createCompletion(deployment_2);
       resolve(response.choices);
     } catch (error: any) {
-      if (error.statusCode === 429) {
+      if (error.statusCode == 429) {
         console.error("  ❌レート制限エラーが発生しました。2番目のデプロイメントで推論します。");
         try {
           const response = await createCompletion(deployment_2);

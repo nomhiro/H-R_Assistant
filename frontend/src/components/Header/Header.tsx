@@ -13,11 +13,11 @@ const Header = () => {
       <div className='flex items-center'>
         <Link href="/" className="flex items-center">
           <IoHome className='text-2xl' />
-          <span className='ml-2 hover:underline'>AIチャット</span>
+          <span className='ml-2 hover:underline'>Chat</span>
         </Link>
         <Link href="/documents" className="flex items-center text-xs hover:underline ml-4">
           <MdFolder className="mr-1" />
-          ドキュメント管理
+          ナレッジ
         </Link>
       </div>
       <div className="flex items-center space-x-4">

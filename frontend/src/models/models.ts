@@ -5,6 +5,7 @@ export interface Query {
 
 // 推論時にベクトル検索で取得するCosmosDBのアイテム
 export interface CosmosInferenceItem {
+  category_id?: string; // カテゴリID (オプショナル)
   file_name: string;
   content: string;
   is_contain_image: boolean;
@@ -15,7 +16,7 @@ export interface CosmosInferenceItem {
 // ナレッジデータとしてCosmosDBに登録する
 export interface CosmosItem {
   id: string;
-  category_id: string;
+  category_id?: string; // カテゴリID (オプショナル)
   page_number: number;
   content: string;
   content_vector: number[];

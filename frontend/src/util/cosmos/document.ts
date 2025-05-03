@@ -13,14 +13,20 @@ export const getItemsByVector = async (embedding: number[], VECTOR_SCORE: string
 
     const { resources } = await container.items
       .query({
-        query: `SELECT TOP 10 c.file_name, c.content, c.is_contain_image, c.image_blob_path, VectorDistance(c.content_vector, @embedding) AS SimilarityScore FROM c WHERE VectorDistance(c.content_vector, @embedding) > ${VECTOR_SCORE} ORDER BY VectorDistance(c.content_vector, @embedding)`,
+        query: `
+          SELECT TOP 10 c.file_name, c.content, c.is_contain_image, c.image_blob_path, 
+          c.category_id, VectorDistance(c.content_vector, @embedding) AS SimilarityScore 
+          FROM c 
+          WHERE VectorDistance(c.content_vector, @embedding) > ${VECTOR_SCORE} 
+          ORDER BY VectorDistance(c.content_vector, @embedding)
+        `,
         parameters: [
           { name: "@embedding", value: embedding }
         ]
       })
       .fetchAll();
     for (const item of resources) {
-      console.log(`🚀${item.file_name}, ${item.content}, ${item.image_blob_path}, ${item.SimilarityScore} is a capitol \n`);
+      console.log(`🚀${item.file_name}, ${item.content}, ${item.image_blob_path}, ${item.category_id}, ${item.SimilarityScore} is a capitol \n`);
     }
     resolve(resources);
   });
@@ -52,11 +58,18 @@ export const updateItem = async (id: string, item: Partial<CosmosItem>): Promise
     const container = database.container(process.env.COSMOS_CONTAINER_NAME!);
 
     try {
-      await container.item(id).replace(item);
-      console.log('🚀Item updated successfully.');
+      const { resource } = await container.item(id, id).read();
+      if (!resource) {
+        console.log("🚀Item not found.");
+        return reject(new Error("Item not found."));
+      }
+
+      const updatedItem = { ...resource, ...item }; // 既存データに新しいデータをマージ
+      await container.item(id, id).replace(updatedItem);
+      console.log("🚀Item updated successfully.");
       resolve();
     } catch (error) {
-      console.error('🚀Error updating item:', error);
+      console.error("🚀Error updating item:", error);
       reject(error);
     }
   });

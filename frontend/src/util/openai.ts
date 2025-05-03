@@ -218,13 +218,13 @@ export const getQueryJson = async (input: string): Promise<Query> => {
 
   return new Promise(async (resolve, reject) => {
     try {
-      const query = await createQueryJson(deployment_1);
+      const query = await createQueryJson(deployment_2);
       resolve(query);
     } catch (error: any) {
       if (error.statusCode === 429) {
         try {
           console.error("  ❌レート制限エラーが発生しました。2番目のデプロイメントで推論します。");
-          const query = await createQueryJson(deployment_2);
+          const query = await createQueryJson(deployment_1);
           resolve(query);
         } catch (error: any) {
           console.error("  ❌ユーザメッセージから検索クエリ生成エラー:", error);

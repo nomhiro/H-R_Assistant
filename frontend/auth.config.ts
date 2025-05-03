@@ -1,7 +1,21 @@
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
+import { getAllAccounts } from "./src/util/cosmos/account";
 
-const allowedEmails = process.env.ALLOWED_EMAILS?.split(",") || []; // 環境変数から許可されるメールアドレスを取得
+let allowedEmails: string[] = [];
+
+async function fetchAllowedEmails() {
+  try {
+    allowedEmails = await getAllAccounts()
+      .then((accounts) => accounts.map((account) => account.email))
+    console.log("🚀Allowed emails updated:", allowedEmails);
+  } catch (error) {
+    console.error("Error fetching allowed emails:", error);
+  }
+}
+
+// 初期化時に許可されたメールアドレスを取得
+fetchAllowedEmails();
 
 export const authConfig: NextAuthConfig = {
   providers: [Google],

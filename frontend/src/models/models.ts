@@ -33,3 +33,9 @@ export interface CategoryItem {
   category: string;  // PartitionKey
   order: number;
 }
+
+// アカウントアイテム
+export interface AccountItem {
+  id: string;
+  email: string; // メールアドレス
+}

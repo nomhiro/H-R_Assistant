@@ -1,15 +1,10 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import FormInput from "@/components/FormInput/FormInput";
 import MessageArea from "@/components/MessageArea/MessageArea";
 import Head from "next/head"; // Headを追加
 
 export default function Home() {
-  const { data: session } = useSession();
-
-  console.log(session?.idToken); // ID トークンを sessionに格納できている
-  console.log(session?.user?.email); // auth() と同様に取得できる
 
   return (
     <>

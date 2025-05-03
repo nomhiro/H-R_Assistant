@@ -1,5 +1,5 @@
 import { CosmosItem } from "@/models/models";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaTrash, FaPlus } from "react-icons/fa";
 
 export default function DocumentList({
   documents,
@@ -32,14 +32,13 @@ export default function DocumentList({
               key={doc.id}
               className="border-b py-2 flex justify-between items-center"
             >
-              <p className="text-sm">{doc.file_name}</p>
+              <p
+                className="text-sm cursor-pointer text-blue-500"
+                onClick={() => onEdit(doc)} // ドキュメント名をクリックしたときにonEditを呼び出す
+              >
+                {doc.file_name}
+              </p>
               <div className="flex space-x-2">
-                <button
-                  className="text-blue-500 text-sm"
-                  onClick={() => onEdit(doc)}
-                >
-                  <FaEdit />
-                </button>
                 <button
                   className="text-red-500 text-sm"
                   onClick={() => onDelete(doc.id)}

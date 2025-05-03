@@ -116,10 +116,13 @@ export default function DocumentsPage() {
   return (
     <>
       <Head>
-        <title>ドキュメント管理</title> {/* タイトルを設定 */}
+        <title>ナレッジ管理</title> {/* タイトルを設定 */}
       </Head>
       <main className="flex flex-col text-gray-800 w-full h-full overflow-y-auto">
-        <h1 className="text-xl font-bold text-center">ドキュメント管理</h1>
+        <h1 className="text-xl font-bold text-center">ナレッジ管理</h1>
+        <p className="text-sm text-center text-gray-600 mt-2">
+          登録したナレッジをもとにチャットアプリで質問回答できます。
+        </p>
         <div className="flex justify-center items-center p-4 space-x-2">
           <Suspense fallback={<p>カテゴリを取得中...</p>}>
             <CategoryDropdown

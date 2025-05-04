@@ -20,8 +20,6 @@ export const GET = async (req: NextRequest) => {
 
     const items = await getCosmosItemsByCategoryId(categoryId);
 
-    console.log("Fetched items:", items); // デバッグ用ログ
-
     // アイテムが0件でも空の配列を返却
     return NextResponse.json(items || [], { status: 200 });
   } catch (error) {

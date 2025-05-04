@@ -1,4 +1,5 @@
 import { signIn, signOut } from "next-auth/react";
+import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa"; // アイコンを追加
 
 interface AuthButtonProps {
   onClick: () => void;
@@ -23,7 +24,7 @@ const AuthButton = ({ onClick, children, variant }: AuthButtonProps) => {
 export const LogInButton = () => {
   return (
     <AuthButton onClick={() => signIn()} variant={"default"}>
-      Log In
+      <FaSignInAlt /> {/* ログインアイコンのみ表示 */}
     </AuthButton>
   );
 };
@@ -31,7 +32,7 @@ export const LogInButton = () => {
 export const LogOutButton = () => {
   return (
     <AuthButton onClick={() => signOut()} variant={"outline"}>
-      Log Out
+      <FaSignOutAlt /> {/* ログアウトアイコンのみ表示 */}
     </AuthButton>
   );
 };

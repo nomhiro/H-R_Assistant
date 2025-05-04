@@ -201,10 +201,10 @@ export default function DocumentsPage() {
 
                   if (response.ok) {
                     const message = editingDocument ? "更新が成功しました！" : "登録が成功しました！";
-                    alert(message);
+                    alert(message); // 更新時もメッセージを表示
                     setText("");
                     setEditingDocument(null);
-                    fetchDocuments(selectedCategory);
+                    fetchDocuments(selectedCategory); // ドキュメントリストを再取得
                   } else {
                     const errorData = await response.json();
                     const message = editingDocument ? "更新に失敗しました。" : "登録に失敗しました。";

@@ -112,17 +112,15 @@ export const getEmbedding = async (message: string): Promise<number[]> => {
   });
 };
 
-export const getQueryJson = async (input: string): Promise<Query> => {
+export const getQueryJson = async (message: string, messages?: APIMessagesType[]): Promise<Query> => {
   const createQueryJson = async (deployment: string): Promise<Query> => {
-    console.log(` 🚀ユーザメッセージから検索クエリ生成開始: ${input}`)
+    console.log(` 🚀ユーザメッセージとチャット履歴から検索クエリ生成開始: ${message}`)
 
     const systemMessage = `ユーザ入力の文章を、重要なKeywordと、それに基づいた検索用文章に変換してください。
 
 # Steps
-
-1. ユーザメッセージを解析し、重要なキーワードを抽出する。
-2. 抽出したキーワードを基に、簡潔な検索用文章を作成する。
-3. キーワードと検索用文章をJSON形式で出力する。
+1. ユーザメッセージとチャット履歴を基に、簡潔な検索用文章を作成する。
+2. キーワードと検索用文章をJSON形式で出力する。
 
 # Output Format
 
@@ -130,28 +128,6 @@ export const getQueryJson = async (input: string): Promise<Query> => {
 {
   "keywords": ["キーワード1", "キーワード2", "キーワード3"],
   "search_text": "検索用に適した文章をここに記述"
-}
-
-# Examples
-
-### Example 1:
-**Input**
-こんにちは！東京で最もおすすめのイタリアンレストランを教えてください。
-
-**Output**
-{
-  "keywords": ["東京", "イタリアンレストラン", "おすすめ"],
-  "search_text": "東京のおすすめイタリアンレストラン"
-}
-
-### Example 2:
-**Input**
-ありがとうございます。最近のAI技術の進化について知りたい。関係津に教えて。
-
-**Output**
-{
-  "keywords": ["AI技術", "進化"],
-  "search_text": "AI技術の進化に関する情報"
 }
 
 # Notes
@@ -170,8 +146,9 @@ export const getQueryJson = async (input: string): Promise<Query> => {
 
     const body = {
       messages: [
+        ...(messages ?? []), // チャット履歴をリクエストに含める
         { role: "system", content: systemMessage },
-        { role: "user", content: input }
+        { role: "user", content: message }
       ],
       temperature: 0.0,
       top_p: 0.0,

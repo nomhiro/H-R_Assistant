@@ -13,7 +13,7 @@ export const getInferenceRAG = async (messages: APIMessagesType[], message: stri
 
       // ユーザメッセージを、Keywordと検索用文章に変換
       console.log('🚀Convert message to keyword and search sentence.');
-      const query: Query = await getQueryJson(message);
+      const query: Query = await getQueryJson(message, messages);
 
       // ベクトル化
       console.log('🚀Get embedding from Azure OpenAI.');
